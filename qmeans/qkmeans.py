@@ -46,7 +46,7 @@ def preprocess(points, map_type='angle', norm_relevance=False):
     """
     if map_type == 'angle':
         p_points = scale(points[:])
-        if norm_relevance == True:
+        if norm_relevance is True:
             norms = np.sqrt(p_points[:,0]**2+p_points[:,1]**2)
             max_norm = np.max(norms)
             new_column = norms/max_norm
@@ -105,9 +105,10 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
             job = execute(qc,backend=backend, shots=shots)
             result = job.result()
             data = result.get_counts()
-            if len(data)==1: return 0.0
+            if len(data)==1:
+                return 0.0
             else: return data['0'*(qubits*2)+'1']/shots
-        elif x.size == 3 and norm_relevance == True:
+        elif x.size == 3 and norm_relevance is True:
             qubits = int(np.ceil(np.log2(x.size)))
             complexes_x = x[0] + 1j*x[1]
             complexes_y= y[0] + 1j*y[1]
@@ -137,7 +138,8 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
             result = job.result()
             data = result.get_counts()
             if len(data)==1: return 0.0
-            else: return data['0'*(qubits*2)+'1']/shots
+            else:
+                return data['0'*(qubits*2)+'1']/shots
     elif map_type == 'probability':
         qubits = int(np.ceil(np.log2(x.size)))
         #print(y)
@@ -162,7 +164,8 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
         job = execute(qc,backend=backend, shots=shots)
         result = job.result()
         data = result.get_counts()
-        if len(data)==1: return 0.0
+        if len(data)==1:
+            return 0.0
         else:
             M = data['0'*(qubits*2)+'1']/shots
             return (norms[0]**2 + norms[1] ** 2 - 2*norms[0]*norms[1]*((1 - 2*M)**(1/2)))**(1/2)
@@ -243,7 +246,7 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 complexes_y= y[0] + 1j*y[1]
                 theta_1 = np.angle(complexes_x)
                 theta_2 = np.angle(complexes_y)
-  
+
                 qr = QuantumRegister(3, name="qr")
                 cr = ClassicalRegister(3, name="cr")
 
@@ -287,7 +290,7 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
             result = job.result()
             data = result.get_counts()
             contained = ['0'*2+'1' in batch_data for batch_data in data]
-            M = [data[i]['0'*2+'1']/shots if contained[i]==True else 0.0 for i in range(len(contained))]
+            M = [data[i]['0'*2+'1']/shots if contained[i] is True else 0.0 for i in range(len(contained))]
             return [(norm_B[0][i]**2 + norm_B[1]**2 -2*norm_B[0][i]*norm_B[1]*((1 - 2*M_i)**(1/2)))**(1/2) for i, M_i in enumerate(M)]
     elif B[0].shape[1] == 3:
         if map_type == 'angle':
@@ -380,7 +383,7 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
             result = job.result()
             data = result.get_counts()
             contained = ['0'*int(np.log2(B[0].shape[1]))*2+'1' in batch_data for batch_data in data]
-            M = [data[i]['0'*int(np.log2(B[0].shape[1]))*2+'1']/shots if contained[i]==True else 0.0 for i in range(len(contained))]
+            M = [data[i]['0'*int(np.log2(B[0].shape[1]))*2+'1']/shots if contained[i] is True else 0.0 for i in range(len(contained))]
             #print('norm_B is', norm_B)
             #print('M is', M)
             return [(norm_B[0][i]**2 + norm_B[1]**2 -2*norm_B[0][i]*norm_B[1]*((1 - 2*M_i)**(1/2)))**(1/2) for i, M_i in enumerate(M)]
@@ -501,7 +504,8 @@ def batch_distances(X, cluster_centers, backend, map_type, shots, verbose, norms
     #print(cluster_norms)
     #print('LOOK HERE END ----------------------------------------------------------------')
 
-    if isinstance(cluster_centers, pd.DataFrame): batches, norm_batches = batch_separate(X.to_numpy(), cluster_centers.to_numpy(),backend.configuration().max_experiments, norms, cluster_norms)
+    if isinstance(cluster_centers, pd.DataFrame):
+        batches, norm_batches = batch_separate(X.to_numpy(), cluster_centers.to_numpy(),backend.configuration().max_experiments, norms, cluster_norms)
     else: batches, norm_batches = batch_separate(X.to_numpy(), cluster_centers,backend.configuration().max_experiments, norms, cluster_norms)
     #if verbose: print('Batches are', batches)
     #if verbose: print('Norm atches are', norm_batches)
@@ -542,7 +546,8 @@ def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, 
         indices: The index location of the chosen centers in the data array X. For a given index
         and center, X[index] = center.
     """
-    if verbose: print('Started Qkmeans++')
+    if verbose:
+        print('Started Qkmeans++')
     random_state = check_random_state(random_state)
     n_samples, n_features = X.shape
 
@@ -556,22 +561,27 @@ def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, 
     indices[0] = center_id
     centers[0] = X.values[center_id]
 
-    if verbose: print('Centers are:', pd.DataFrame(centers))
+    if verbose:
+        print('Centers are:', pd.DataFrame(centers))
 
-    if batch: closest_distances = batch_distances(X, centers[0, np.newaxis], backend, map_type, shots, verbose)
+    if batch:
+        closest_distances = batch_distances(X, centers[0, np.newaxis], backend, map_type, shots, verbose)
     else: closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots,norms[i,j]) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[0, np.newaxis]).iterrows()])
     current_pot = closest_distances.sum()
 
-    #if verbose: print('Closest distances are:', closest_distances)
+    #if verbose:
+    #    print('Closest distances are:', closest_distances)
 
     for c in range(1, n_clusters):
-        if verbose: print('Cluster center', c)
+        if verbose:
+            print('Cluster center', c)
         rand_vals = random_state.random_sample(n_local_trials) * current_pot
         candidate_ids = np.searchsorted(stable_cumsum(closest_distances), rand_vals)
 
         np.clip(candidate_ids, None, closest_distances.size - 1, out=candidate_ids)
 
-        if batch: distance_to_candidates = batch_distances(X, X.values[candidate_ids], backend, map_type, shots, verbose)
+        if batch:
+            distance_to_candidates = batch_distances(X, X.values[candidate_ids], backend, map_type, shots, verbose)
         else: distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots,norms[i,j]) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
 
         np.minimum(closest_distances, distance_to_candidates,
@@ -586,11 +596,13 @@ def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, 
         centers[c] = X.values[best_candidate]
         indices[c] = best_candidate
 
-        if verbose: print('Centers are:', pd.DataFrame(centers))
+        if verbose:
+            print('Centers are:', pd.DataFrame(centers))
         #if verbose: print('Closest distances are:', closest_distances)
 
         if c == 1 and initial_center == 'far':
-            if batch: closest_distances = batch_distances(X, centers[1, np.newaxis], backend, map_type, shots, verbose)
+            if batch:
+                closest_distances = batch_distances(X, centers[1, np.newaxis], backend, map_type, shots, verbose)
             else: closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots,norms[i,j]) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[1, np.newaxis]).iterrows()])
             current_pot = closest_distances.sum()
             rand_vals = random_state.random_sample(n_local_trials) * current_pot
@@ -598,7 +610,8 @@ def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, 
 
             np.clip(candidate_ids, None, closest_distances.size - 1, out=candidate_ids)
 
-            if batch: distance_to_candidates = batch_distances(X, X.values[candidate_ids], backend, map_type, shots, verbose)
+            if batch:
+                distance_to_candidates = batch_distances(X, X.values[candidate_ids], backend, map_type, shots, verbose)
             else: distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots,norms[i,j]) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
 
             np.minimum(closest_distances, distance_to_candidates,
@@ -613,7 +626,8 @@ def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, 
             centers[0] = X.values[best_candidate]
             indices[0] = best_candidate
 
-            if verbose: print('Centers are:', pd.DataFrame(centers))
+            if verbose:
+                print('Centers are:', pd.DataFrame(centers))
 
     return centers, indices
 
@@ -682,7 +696,8 @@ class QuantumKMeans():
         Returns:
             self: Fitted estimator.
         """
-        if self.verbose: print('Data is:',X)
+        if self.verbose:
+            print('Data is:',X)
         finished = False
         old_X = pd.DataFrame(X)
         if self.map_type == 'probability':
@@ -693,26 +708,32 @@ class QuantumKMeans():
         if self.init == 'qk-means++':
             self.cluster_centers_, _ = qkmeans_plusplus(X, self.n_clusters, self.backend, self.map_type, self.verbose, self.initial_center, shots=self.shots, batch=batch, norms=norms)
             self.cluster_centers_ = pd.DataFrame(self.cluster_centers_).values
-        elif self.init == 'random': self.cluster_centers_ = old_X.sample(n=self.n_clusters).reset_index(drop=True)
+        elif self.init == 'random':
+            self.cluster_centers_ = old_X.sample(n=self.n_clusters).reset_index(drop=True)
         #print('Cluster centers are:', self.cluster_centers_)
         iteration = 0
         while not finished and iteration<self.max_iter:
-            if self.verbose: print("Iteration",iteration)
+            if self.verbose:
+                print("Iteration",iteration)
             normalized_clusters, cluster_norms = preprocess(self.cluster_centers_.values, self.map_type, self.norm_relevance)
             normalized_clusters = pd.DataFrame(normalized_clusters)
             #print(norms)
             #print(cluster_norms)
             #print(X, normalized_clusters)
-            if batch: distances = batch_distances(X, normalized_clusters, self.backend, self.map_type, self.shots, self.verbose, norms, cluster_norms)
+            if batch:
+                distances = batch_distances(X, normalized_clusters, self.backend, self.map_type, self.shots, self.verbose, norms, cluster_norms)
             else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
             self.labels_ = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
             new_centroids = old_X.groupby(self.labels_).mean()
-            if self.verbose: print("Old centroids are",self.cluster_centers_)
-            if self.verbose: print("New centroids are",new_centroids)
+            if self.verbose:
+                print("Old centroids are",self.cluster_centers_)
+            if self.verbose:
+                print("New centroids are",new_centroids)
             if abs((new_centroids - self.cluster_centers_).sum(axis=0).sum()) < self.tol:
                 finished = True
             self.cluster_centers_ = new_centroids
-            if self.verbose: print("Centers are", self.labels_)
+            if self.verbose:
+                print("Centers are", self.labels_)
             self.n_iter_ += 1
             iteration += 1
         return self
@@ -731,11 +752,13 @@ class QuantumKMeans():
         """
         X, norms = pd.DataFrame(preprocess(X, self.map_type, self.norm_relevance))
         if sample_weight is None:
-            if batch: distances = batch_distances(X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose)
+            if batch:
+                distances = batch_distances(X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose)
             else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,norms[i,j]) for i,point in X.iterrows()] for j,centroid in self.cluster_centers_.iterrows()])
         else:
             weight_X = X * sample_weight
-            if batch: batch_distances(weight_X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose)
+            if batch:
+                batch_distances(weight_X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose)
             else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots) for _,point in weight_X.iterrows()] for _,centroid in self.cluster_centers_.iterrows()])
         labels = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
         return labels
@@ -763,4 +786,4 @@ class QuantumKMeans():
         """
         for parameter, value in params.items():
             setattr(self, parameter, value)
-        return self     
+        return self
