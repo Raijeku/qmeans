@@ -34,9 +34,12 @@ def preprocess(points, map_type='angle', norm_relevance=False):
     Args:
         points: The input data points.
         map_type: {'angle', 'probability'} Specifies the type of data encoding.
-            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point.
-            'probability': Relies on data normalization to preprocess the data to acquire a norm of 1.
-        norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between both data points and another for the magnitude of the data points.
+            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data
+            point.
+            'probability': Relies on data normalization to preprocess the data to acquire a norm of
+            1.
+        norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between
+        both data points and another for the magnitude of the data points.
 
     Returns:
         p_points: Preprocessed points.
@@ -55,19 +58,24 @@ def preprocess(points, map_type='angle', norm_relevance=False):
         return p_points, norms
 
 def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1]), norm_relevance=False):
-    """Finds the distance between two data points by mapping the data points onto qubits using amplitude or angle encoding and then using a swap test.
+    """Finds the distance between two data points by mapping the data points onto qubits using
+    amplitude or angle encoding and then using a swap test.
 
-    The algorithm performs angle encoding if the type is 'angle' and amplitude encoding if the type is 'probability'.
+    The algorithm performs angle encoding if the type is 'angle' and amplitude encoding if the type
+    is 'probability'.
 
     Args:
         x: The first data point.
         y: The second data point.
         backend: IBM quantum device to calculate the distance with.
         map_type: {'angle', 'probability'} Specify the type of data encoding.
-            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point.
-            'probability': Relies on data normalization to preprocess the data to acquire a norm of 1.
+            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data
+            point.
+            'probability': Relies on data normalization to preprocess the data to acquire a norm of
+            1.
         shots: Number of repetitions of each circuit, for sampling.
-        norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between both data points and another for the magnitude of the data points.
+        norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between
+        both data points and another for the magnitude of the data points.
 
     Returns:
         distance: Distance between the two data points.
@@ -162,7 +170,9 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
 def batch_separate(X, clusters, max_experiments, norms, cluster_norms):
     """Creates batches of pairs of vectors.
 
-    Separates data points X and cluster centers into a number of batches of elements for distance calculations in a single job. Each batch contains a set of data points and cluster centers, corresponding to the data for distance measurements in each batch.
+    Separates data points X and cluster centers into a number of batches of elements for distance
+    calculations in a single job. Each batch contains a set of data points and cluster centers,
+    corresponding to the data for distance measurements in each batch.
 
     Args:
         X: Training instances to cluster.
@@ -204,16 +214,20 @@ def batch_separate(X, clusters, max_experiments, norms, cluster_norms):
         raise NotImplementedError
 
 def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
-    """Finds the distance between pairs of data points and cluster centers inside a batch by mapping the data points onto qubits using amplitude or angle encoding and then using a swap test.
+    """Finds the distance between pairs of data points and cluster centers inside a batch by
+    mapping the data points onto qubits using amplitude or angle encoding and then using a swap test.
 
-    The algorithm performs angle encoding if the type is 'angle' and amplitude encoding if the type is 'probability'.
+    The algorithm performs angle encoding if the type is 'angle' and amplitude encoding if the type
+    is 'probability'.
 
     Args:
         B: The batch of X data points and y cluster centers.
         backend: IBM quantum device to calculate the distance with.
         map_type: {'angle', 'probability'} Specifies the type of data encoding.
-            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point.
-            'probability': Relies on data normalization to preprocess the data to acquire a norm of 1.
+            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data
+            point.
+            'probability': Relies on data normalization to preprocess the data to acquire a norm of
+            1.
         shots: Number of repetitions of each circuit, for sampling.
 
     Returns:
@@ -463,15 +477,18 @@ def batch_collect(batch_d, desired_shape):
 def batch_distances(X, cluster_centers, backend, map_type, shots, verbose, norms, cluster_norms):
     """Batches data and calculates and collects distances.
 
-    Data is separated into batches, sent to the quantum device to calculate distances and the distances are then collected from the results.
+    Data is separated into batches, sent to the quantum device to calculate distances and the
+    distances are then collected from the results.
 
     Args:
         X: Training instances to cluster.
         cluster_centers: Coordinates of cluster centers.
         backend: IBM quantum device to run the quantum k-means algorithm on.
         map_type: {'angle', 'probability'} Specifies the type of data encoding.
-            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point.
-            'probability': Relies on data normalization to preprocess the data to acquire a norm of 1.
+            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data
+            point.
+            'probability': Relies on data normalization to preprocess the data to acquire a norm of
+            1.
         shots: Number of repetitions of each circuit, for sampling.
         verbose: Defines if verbosity is active for deeper insight into the class processes.
 
@@ -504,19 +521,26 @@ def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, 
         n_clusters: The number of centroids to initialize.
         backend: IBM quantum device to run the quantum k-means algorithm on.
         map_type: {'angle', 'probability'} Specifies the type of data encoding.
-            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point.
-            'probability': Relies on data normalization to preprocess the data to acquire a norm of 1.
+            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data
+            point.
+            'probability': Relies on data normalization to preprocess the data to acquire a norm of
+            1.
         verbose: Defines if verbosity is active for deeper insight into the class processes.
-        initial_center: {'random', 'far'} Speficies the strategy for setting the initial cluster center.
+        initial_center: {'random', 'far'} Speficies the strategy for setting the initial cluster
+        center.
             'random': Assigns a random initial center.
             'far': Specifies the furthest point as the initial center.
         x_squared_norms: Squared Euclidean norm of each data point.
-        n_local_trials: The number of seeding trials for each center (except the first), of which the one reducing inertia the most is greedily chosen. Set to None to make the number of trials depend logarithmically on the number of seeds (2+log(k)).
-        random_state: Determines random number generation for centroid initialization. Pass an int for reproducible output across multiple function calls.
+        n_local_trials: The number of seeding trials for each center (except the first), of which
+        the one reducing inertia the most is greedily chosen. Set to None to make the number of
+        trials depend logarithmically on the number of seeds (2+log(k)).
+        random_state: Determines random number generation for centroid initialization. Pass an int
+        for reproducible output across multiple function calls.
 
     Returns:
         centers: The initial centers for qk-means.
-        indices: The index location of the chosen centers in the data array X. For a given index and center, X[index] = center.
+        indices: The index location of the chosen centers in the data array X. For a given index
+        and center, X[index] = center.
     """
     if verbose: print('Started Qkmeans++')
     random_state = check_random_state(random_state)
@@ -594,25 +618,36 @@ def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, 
     return centers, indices
 
 class QuantumKMeans():
-    """Quantum k-means clustering algorithm. This k-means alternative implements quantum machine learning to calculate distances between data points and centroids using quantum circuits.
+    """Quantum k-means clustering algorithm. This k-means alternative implements quantum machine
+    learning to calculate distances between data points and centroids using quantum circuits.
 
     Args:
         n_clusters: The number of clusters to use and the amount of centroids generated.
-        init: {'qk-means++, 'random'}, callable or array-like of shape (n_clusters, n_features) Method for initialization:
-            'qk-means++' : selects initial cluster centers for qk-mean clustering in a smart way to speed up convergence.
-            'random': choose n_clusters observations (rows) at random from data for the initial centroids.
-        If an array is passed, it should be of shape (n_clusters, n_features) and gives the initial centers.
-        If a callable is passed, it should take arguments X, n_clusters and a random state and return an initialization.
-        tol: Relative tolerance with regards to Frobenius norm of the difference in the cluster centers of two consecutive iterations to declare convergence.
+        init: {'qk-means++, 'random'}, callable or array-like of shape (n_clusters, n_features)
+        Method for initialization:
+            'qk-means++' : selects initial cluster centers for qk-mean clustering in a smart way to
+            speed up convergence.
+            'random': choose n_clusters observations (rows) at random from data for the initial
+            centroids.
+        If an array is passed, it should be of shape (n_clusters, n_features) and gives the initial
+        centers.
+        If a callable is passed, it should take arguments X, n_clusters and a random state and
+        return an initialization.
+        tol: Relative tolerance with regards to Frobenius norm of the difference in the cluster
+        centers of two consecutive iterations to declare convergence.
         verbose: Defines if verbosity is active for deeper insight into the class processes.
         max_iter: Maximum number of iterations of the quantum k-means algorithm for a single run.
         backend: IBM quantum device to run the quantum k-means algorithm on.
         map_type: {'angle', 'probability'} Specifies the type of data encoding.
-            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point.
-            'probability': Relies on data normalization to preprocess the data to acquire a norm of 1.
+            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data
+            point.
+            'probability': Relies on data normalization to preprocess the data to acquire a norm of
+            1.
         shots: Number of repetitions of each circuit, for sampling.
-        norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between both data points and another for the magnitude of the data points.
-        initial_center: {'random', 'far'} Speficies the strategy for setting the initial cluster center.
+        norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between
+        both data points and another for the magnitude of the data points.
+        initial_center: {'random', 'far'} Speficies the strategy for setting the initial cluster
+        center.
             'random': Assigns a random initial center.
             'far': Specifies the furthest point as the initial center.
 
@@ -687,7 +722,8 @@ class QuantumKMeans():
 
         Args:
             X: New data points to predict.
-            sample_weight: The weights for each observation in X. If None, all observations are assigned equal weight.
+            sample_weight: The weights for each observation in X. If None, all observations are
+            assigned equal weight.
             batch: Option for using batches to calculate distances.
 
         Returns:
@@ -708,7 +744,8 @@ class QuantumKMeans():
         """Get parameters for this estimator.
 
         Args:
-            deep: If True, will return the parameters for this estimator and contained subobjects that are estimators.
+            deep: If True, will return the parameters for this estimator and contained subobjects
+            that are estimators.
 
         Returns:
             params: Parameter names mapped to their values.
