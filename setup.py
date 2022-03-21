@@ -15,5 +15,5 @@ setup(
    author_email='raijeku@gmail.com',
    url="http://www.notavailable.com/",
    packages=['qmeans'],
-   install_requires=['numpy', 'pandas', 'qiskit', 'sklearn'],
+   install_requires=['wheel', 'numpy', 'pandas', 'qiskit', 'sklearn', 'pytest'],
 )

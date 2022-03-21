@@ -20,7 +20,6 @@ import numpy as np
 import pandas as pd
 from qiskit import Aer, IBMQ, execute
 from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
-from math import pi
 from sklearn.preprocessing import normalize, scale
 from sklearn.utils import check_random_state
 from sklearn.utils. extmath import stable_cumsum
@@ -95,8 +94,8 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
             qc.h(qr[0])
             qc.h(qr[1])
             qc.h(qr[2])
-            qc.u3(theta_1, pi, pi, qr[1])
-            qc.u3(theta_2, pi, pi, qr[2])
+            qc.u3(theta_1, np.pi, np.pi, qr[1])
+            qc.u3(theta_2, np.pi, np.pi, qr[2])
             qc.cswap(qr[0], qr[1], qr[2])
             qc.h(qr[0])
 
@@ -125,9 +124,9 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
             qc.h(qr[0])
             qc.h(qr[1])
             qc.h(qr[2])
-            qc.u3(theta_1, pi, pi, qr[1])
+            qc.u3(theta_1, np.pi, np.pi, qr[1])
             qc.u3(ro_1, 0, 0, qr[1])
-            qc.u3(theta_2, pi, pi, qr[2])
+            qc.u3(theta_2, np.pi, np.pi, qr[2])
             qc.u3(ro_2, 0, 0, qr[1])
             qc.cswap(qr[0], qr[1], qr[2])
             qc.h(qr[0])
@@ -254,8 +253,8 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 qc.h(qr[0])
                 qc.h(qr[1])
                 qc.h(qr[2])
-                qc.u3(theta_1, pi, pi, qr[1])
-                qc.u3(theta_2, pi, pi, qr[2])
+                qc.u3(theta_1, np.pi, np.pi, qr[1])
+                qc.u3(theta_2, np.pi, np.pi, qr[2])
                 qc.cswap(qr[0], qr[1], qr[2])
                 qc.h(qr[0])
 
@@ -313,9 +312,9 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 qc.h(qr[0])
                 qc.h(qr[1])
                 qc.h(qr[2])
-                qc.u3(theta_1, pi, pi, qr[1])
+                qc.u3(theta_1, np.pi, np.pi, qr[1])
                 qc.u3(ro_1, 0, 0, qr[1])
-                qc.u3(theta_2, pi, pi, qr[2])
+                qc.u3(theta_2, np.pi, np.pi, qr[2])
                 qc.u3(ro_2, 0, 0, qr[2])
                 qc.cswap(qr[0], qr[1], qr[2])
                 qc.h(qr[0])
@@ -346,8 +345,8 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 qc.h(qr[0])
                 qc.h(qr[1])
                 qc.h(qr[2])
-                qc.u3(theta_1, pi, pi, qr[1])
-                qc.u3(theta_2, pi, pi, qr[2])
+                qc.u3(theta_1, np.pi, np.pi, qr[1])
+                qc.u3(theta_2, np.pi, np.pi, qr[2])
                 qc.cswap(qr[0], qr[1], qr[2])
                 qc.h(qr[0])
 
@@ -405,8 +404,8 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 qc.h(qr[0])
                 qc.h(qr[1])
                 qc.h(qr[2])
-                qc.u3(theta_1, pi, pi, qr[1])
-                qc.u3(theta_2, pi, pi, qr[2])
+                qc.u3(theta_1, np.pi, np.pi, qr[1])
+                qc.u3(theta_2, np.pi, np.pi, qr[2])
                 qc.cswap(qr[0], qr[1], qr[2])
                 qc.h(qr[0])
 
