@@ -1,6 +1,8 @@
-"""Module for quantum k-means algorithm with a class containing sk-learn style functions resembling the k-means algorithm.
+"""Module for quantum k-means algorithm with a class containing sk-learn style functions resembling
+the k-means algorithm.
 
-This module contains the QuantumKMeans class for clustering according to euclidian distances calculated by running quantum circuits.
+This module contains the QuantumKMeans class for clustering according to euclidian distances
+calculated by running quantum circuits.
 
     Typical usage example:
 
@@ -26,7 +28,8 @@ from sklearn.utils. extmath import stable_cumsum
 def preprocess(points, map_type='angle', norm_relevance=False):
     """Preprocesses data points according to a type criteria.
 
-    The algorithm scales the data points if the type is 'angle' and normalizes the data points if the type is 'probability'.
+    The algorithm scales the data points if the type is 'angle' and normalizes the data points
+    if the type is 'probability'.
 
     Args:
         points: The input data points.
