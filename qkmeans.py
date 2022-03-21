@@ -1,6 +1,6 @@
 """Module for quantum k-means algorithm with a class containing sk-learn style functions resembling the k-means algorithm.
 
-This module contains the QuantumKMeans class for clustering according to euclidian distances calculated by running quantum circuits. 
+This module contains the QuantumKMeans class for clustering according to euclidian distances calculated by running quantum circuits.
 
     Typical usage example:
 
@@ -30,15 +30,15 @@ def preprocess(points, map_type='angle', norm_relevance=False):
 
     Args:
         points: The input data points.
-        map_type: {'angle', 'probability'} Specifies the type of data encoding. 
-            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point. 
+        map_type: {'angle', 'probability'} Specifies the type of data encoding.
+            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point.
             'probability': Relies on data normalization to preprocess the data to acquire a norm of 1.
         norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between both data points and another for the magnitude of the data points.
 
     Returns:
         p_points: Preprocessed points.
     """
-    if map_type == 'angle': 
+    if map_type == 'angle':
         p_points = scale(points[:])
         if norm_relevance == True:
             norms = np.sqrt(p_points[:,0]**2+p_points[:,1]**2)
@@ -47,7 +47,7 @@ def preprocess(points, map_type='angle', norm_relevance=False):
             new_column = new_column.reshape((new_column.size,1))
             p_points = np.concatenate((p_points, new_column),axis=1)
         return p_points
-    elif map_type == 'probability': 
+    elif map_type == 'probability':
         p_points, norms = normalize(points[:], return_norm=True)
         return p_points, norms
 
@@ -60,8 +60,8 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
         x: The first data point.
         y: The second data point.
         backend: IBM quantum device to calculate the distance with.
-        map_type: {'angle', 'probability'} Specify the type of data encoding. 
-            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point. 
+        map_type: {'angle', 'probability'} Specify the type of data encoding.
+            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point.
             'probability': Relies on data normalization to preprocess the data to acquire a norm of 1.
         shots: Number of repetitions of each circuit, for sampling.
         norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between both data points and another for the magnitude of the data points.
@@ -76,7 +76,7 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
             complexes_y= y[0] + 1j*y[1]
             theta_1 = np.angle(complexes_x)
             theta_2 = np.angle(complexes_y)
-        
+
             qr = QuantumRegister(3, name="qr")
             cr = ClassicalRegister(3, name="cr")
 
@@ -105,7 +105,7 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
 
             ro_1 = x[2]*np.pi
             ro_2 = y[2]*np.pi
-        
+
             qr = QuantumRegister(3, name="qr")
             cr = ClassicalRegister(3, name="cr")
 
@@ -152,7 +152,7 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
         result = job.result()
         data = result.get_counts()
         if len(data)==1: return 0.0
-        else: 
+        else:
             M = data['0'*(qubits*2)+'1']/shots
             return (norms[0]**2 + norms[1] ** 2 - 2*norms[0]*norms[1]*((1 - 2*M)**(1/2)))**(1/2)
 
@@ -170,20 +170,20 @@ def batch_separate(X, clusters, max_experiments, norms, cluster_norms):
         B: Batches with pairs of data points and cluster centers.
     """
     if X.shape[0] > clusters.shape[0]:
-        if X.shape[0] % max_experiments == 0: 
+        if X.shape[0] % max_experiments == 0:
             batches_X = np.asarray(np.split(X,[i*max_experiments for i in range(1,X.shape[0]//max_experiments)]))
             batches_norms_X = np.asarray(np.split(norms, [i*max_experiments for i in range(1, norms.shape[0]//max_experiments)]))
-        else: 
+        else:
             batches_X = np.asarray(np.split(X,[i*max_experiments for i in range(1,X.shape[0]//max_experiments + 1)]))
             batches_norms_X = np.asarray(np.split(norms, [i*max_experiments for i in range(1, norms.shape[0]//max_experiments + 1)]))
         #print("batches_X:",batches_X)
         #print(batches_X.shape)
         #print("clusters:",clusters)
         #print(clusters.shape)
-        if X.shape[0] % max_experiments == 0: 
+        if X.shape[0] % max_experiments == 0:
             batches_clusters = np.empty([(X.shape[0]//max_experiments)*clusters.shape[0],clusters.shape[1]], dtype=clusters.dtype)
             batches_norms_clusters = np.empty([(X.shape[0]//max_experiments)*cluster_norms.shape[0],1], dtype=cluster_norms.dtype)
-        else: 
+        else:
             batches_clusters = np.empty([(X.shape[0]//max_experiments + 1)*clusters.shape[0],clusters.shape[1]], dtype=clusters.dtype)
             batches_norms_clusters = np.empty([(X.shape[0]//max_experiments + 1)*cluster_norms.shape[0],1], dtype=cluster_norms.dtype)
         for i in range(clusters.shape[0]):
@@ -208,8 +208,8 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
     Args:
         B: The batch of X data points and y cluster centers.
         backend: IBM quantum device to calculate the distance with.
-        map_type: {'angle', 'probability'} Specifies the type of data encoding. 
-            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point. 
+        map_type: {'angle', 'probability'} Specifies the type of data encoding.
+            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point.
             'probability': Relies on data normalization to preprocess the data to acquire a norm of 1.
         shots: Number of repetitions of each circuit, for sampling.
 
@@ -226,7 +226,7 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 complexes_y= y[0] + 1j*y[1]
                 theta_1 = np.angle(complexes_x)
                 theta_2 = np.angle(complexes_y)
-            
+  
                 qr = QuantumRegister(3, name="qr")
                 cr = ClassicalRegister(3, name="cr")
 
@@ -282,7 +282,7 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 complexes_y= y[0] + 1j*y[1]
                 theta_1 = np.angle(complexes_x)
                 theta_2 = np.angle(complexes_y)
-            
+
                 ro_1 = x[2]*np.pi/2
                 ro_2 = y[2]*np.pi/2
 
@@ -318,7 +318,7 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 complexes_y= y[0] + 1j*y[1]
                 theta_1 = np.angle(complexes_x)
                 theta_2 = np.angle(complexes_y)
-            
+
                 qr = QuantumRegister(3, name="qr")
                 cr = ClassicalRegister(3, name="cr")
 
@@ -351,7 +351,7 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 qc.initialize(x,[i+1 for i in range(int(np.log2(B[0].shape[1])))])
                 qc.initialize(y,[i+1+int(np.log2(B[0].shape[1])) for i in range(int(np.log2(B[0].shape[1])))])
 
-                qc.h(qr[0])     
+                qc.h(qr[0])
                 for i in range(int(np.log2(B[0].shape[1]))):
                     qc.cswap(qr[0], qr[1+i], qr[int(np.log2(B[0].shape[1])+1)+i])
                 qc.h(qr[0])
@@ -377,7 +377,7 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 complexes_y= y[0] + 1j*y[1]
                 theta_1 = np.angle(complexes_x)
                 theta_2 = np.angle(complexes_y)
-            
+
                 qr = QuantumRegister(3, name="qr")
                 cr = ClassicalRegister(3, name="cr")
 
@@ -414,7 +414,7 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 qc.initialize(x,[i+1 for i in range(qubits)])
                 qc.initialize(y,[i+1+qubits for i in range(qubits)])
 
-                qc.h(qr[0])     
+                qc.h(qr[0])
                 for i in qubits:
                     qc.cswap(qr[0], qr[1+i], qr[qubits+1+i])
                 qc.h(qr[0])
@@ -466,8 +466,8 @@ def batch_distances(X, cluster_centers, backend, map_type, shots, verbose, norms
         X: Training instances to cluster.
         cluster_centers: Coordinates of cluster centers.
         backend: IBM quantum device to run the quantum k-means algorithm on.
-        map_type: {'angle', 'probability'} Specifies the type of data encoding. 
-            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point. 
+        map_type: {'angle', 'probability'} Specifies the type of data encoding.
+            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point.
             'probability': Relies on data normalization to preprocess the data to acquire a norm of 1.
         shots: Number of repetitions of each circuit, for sampling.
         verbose: Defines if verbosity is active for deeper insight into the class processes.
@@ -488,8 +488,8 @@ def batch_distances(X, cluster_centers, backend, map_type, shots, verbose, norms
     distance_list = np.asarray([batch_distance(B,backend,norm_batches[i],map_type,shots) for i, B in enumerate(batches)])
     #if verbose: print('Distance list is', distance_list)
     distances = batch_collect(distance_list, (cluster_centers.shape[0],X.shape[0]))
-    #if verbose: print('Distances are', distances)  
-    return distances 
+    #if verbose: print('Distances are', distances)
+    return distances
 
 def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, shots=1024, norms=np.array([1,1]), batch=True, x_squared_norms=None, n_local_trials=None, random_state=None):
     """Init n_clusters seeds according to qk-means++.
@@ -500,8 +500,8 @@ def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, 
         X: The data to pick seeds from.
         n_clusters: The number of centroids to initialize.
         backend: IBM quantum device to run the quantum k-means algorithm on.
-        map_type: {'angle', 'probability'} Specifies the type of data encoding. 
-            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point. 
+        map_type: {'angle', 'probability'} Specifies the type of data encoding.
+            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point.
             'probability': Relies on data normalization to preprocess the data to acquire a norm of 1.
         verbose: Defines if verbosity is active for deeper insight into the class processes.
         initial_center: {'random', 'far'} Speficies the strategy for setting the initial cluster center.
@@ -518,7 +518,7 @@ def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, 
     if verbose: print('Started Qkmeans++')
     random_state = check_random_state(random_state)
     n_samples, n_features = X.shape
-    
+
     centers = np.empty((n_clusters, n_features), dtype= X.values.dtype)
 
     if n_local_trials is None:
@@ -587,12 +587,12 @@ def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, 
             indices[0] = best_candidate
 
             if verbose: print('Centers are:', pd.DataFrame(centers))
-    
+
     return centers, indices
 
 class QuantumKMeans():
     """Quantum k-means clustering algorithm. This k-means alternative implements quantum machine learning to calculate distances between data points and centroids using quantum circuits.
-    
+
     Args:
         n_clusters: The number of clusters to use and the amount of centroids generated.
         init: {'qk-means++, 'random'}, callable or array-like of shape (n_clusters, n_features) Method for initialization:
@@ -604,8 +604,8 @@ class QuantumKMeans():
         verbose: Defines if verbosity is active for deeper insight into the class processes.
         max_iter: Maximum number of iterations of the quantum k-means algorithm for a single run.
         backend: IBM quantum device to run the quantum k-means algorithm on.
-        map_type: {'angle', 'probability'} Specifies the type of data encoding. 
-            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point. 
+        map_type: {'angle', 'probability'} Specifies the type of data encoding.
+            'angle': Uses U3 gates with its theta angle being the phase angle of the complex data point.
             'probability': Relies on data normalization to preprocess the data to acquire a norm of 1.
         shots: Number of repetitions of each circuit, for sampling.
         norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between both data points and another for the magnitude of the data points.
@@ -633,10 +633,10 @@ class QuantumKMeans():
         self.shots = shots
         self.norm_relevance = norm_relevance
         self.initial_center = initial_center
-    
+
     def fit(self, X, batch=True):
         """Computes quantum k-means clustering.
-        
+
         Args:
             X: Training instances to cluster.
             batch: Option for using batches to calculate distances.
@@ -647,12 +647,12 @@ class QuantumKMeans():
         if self.verbose: print('Data is:',X)
         finished = False
         old_X = pd.DataFrame(X)
-        if self.map_type == 'probability': 
+        if self.map_type == 'probability':
             X, norms = preprocess(X, self.map_type, self.norm_relevance)
             X = pd.DataFrame(X)
         else: X = pd.DataFrame(preprocess(X, self.map_type, self.norm_relevance))
         #print('Preprocessed data is:',X)
-        if self.init == 'qk-means++': 
+        if self.init == 'qk-means++':
             self.cluster_centers_, _ = qkmeans_plusplus(X, self.n_clusters, self.backend, self.map_type, self.verbose, self.initial_center, shots=self.shots, batch=batch, norms=norms)
             self.cluster_centers_ = pd.DataFrame(self.cluster_centers_).values
         elif self.init == 'random': self.cluster_centers_ = old_X.sample(n=self.n_clusters).reset_index(drop=True)
@@ -665,7 +665,7 @@ class QuantumKMeans():
             #print(norms)
             #print(cluster_norms)
             #print(X, normalized_clusters)
-            if batch: distances = batch_distances(X, normalized_clusters, self.backend, self.map_type, self.shots, self.verbose, norms, cluster_norms)     
+            if batch: distances = batch_distances(X, normalized_clusters, self.backend, self.map_type, self.shots, self.verbose, norms, cluster_norms)
             else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
             self.labels_ = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
             new_centroids = old_X.groupby(self.labels_).mean()
@@ -692,9 +692,9 @@ class QuantumKMeans():
         """
         X, norms = pd.DataFrame(preprocess(X, self.map_type, self.norm_relevance))
         if sample_weight is None:
-            if batch: distances = batch_distances(X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose) 
+            if batch: distances = batch_distances(X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose)
             else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,norms[i,j]) for i,point in X.iterrows()] for j,centroid in self.cluster_centers_.iterrows()])
-        else: 
+        else:
             weight_X = X * sample_weight
             if batch: batch_distances(weight_X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose)
             else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots) for _,point in weight_X.iterrows()] for _,centroid in self.cluster_centers_.iterrows()])
@@ -703,7 +703,7 @@ class QuantumKMeans():
 
     def get_params(self, deep=True):
         """Get parameters for this estimator.
-        
+
         Args:
             deep: If True, will return the parameters for this estimator and contained subobjects that are estimators.
 
@@ -714,7 +714,7 @@ class QuantumKMeans():
 
     def set_params(self, **params):
         """Set the parameters of this estimator.
-        
+
         Args:
             **params: Estimator parameters.
 
