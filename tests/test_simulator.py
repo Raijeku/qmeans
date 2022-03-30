@@ -74,7 +74,7 @@ def test_preprocess_probability(data):
     assert np.allclose(preprocessed_data, verification_data)
     assert np.allclose(norms, verification_norms)
 
-@given(arrays(np.float64,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=100)))
+"""@given(arrays(np.float64,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=100)))
 def test_preprocess_angle(data):
     assume(np.isfinite(data).all())
     data = data.astype('float64')
@@ -87,7 +87,7 @@ def test_preprocess_angle(data):
         #std[std == 0] = 1
         verification_data = (data-mean)/std
         verification_data[np.isnan(verification_data)] = 0
-    assert np.allclose(preprocessed_data, verification_data)
+    assert np.allclose(preprocessed_data, verification_data)"""
 
 """@given(arrays(np.float64,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=100)))
 def test_preprocess_angle_norm_relevance(data):
