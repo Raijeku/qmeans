@@ -1,5 +1,4 @@
 from turtle import settiltangle
-from matplotlib.pyplot import axis
 from numpy import ones_like
 import pytest
 from qmeans.qkmeans import *
