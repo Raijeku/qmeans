@@ -1,0 +1,21 @@
+qmeans package
+==============
+
+Submodules
+----------
+
+qmeans.qkmeans module
+---------------------
+
+.. automodule:: qmeans.qkmeans
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: qmeans
+   :members:
+   :undoc-members:
+   :show-inheritance:

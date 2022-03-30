@@ -1,0 +1,21 @@
+tests package
+=============
+
+Submodules
+----------
+
+tests.test\_simulator module
+----------------------------
+
+.. automodule:: tests.test_simulator
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: tests
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -4,13 +4,13 @@ the k-means algorithm.
 This module contains the QuantumKMeans class for clustering according to euclidian distances
 calculated by running quantum circuits.
 
-    Typical usage example:
-
+Typical usage example::
+    
     import numpy as np
     import pandas as pd
     from qkmeans import *
 
-    backend = IBMQ.load_account().get_backend('ibmq_qasm_simulator')
+    backend = Aer.get_backend("aer_simulator_statevector")
     X = pd.DataFrame(np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]]))
     qk_means = QuantumKMeans(backend, n_clusters=2, verbose=True, map_type='angle')
     qk_means.fit(X)
@@ -46,13 +46,22 @@ def preprocess(points, map_type='angle', norm_relevance=False):
     if map_type == 'angle':
         p_points = scale(points[:])
         if norm_relevance is True:
-            norms = np.sqrt(p_points[:,0]**2+p_points[:,1]**2)
+            _, norms = normalize(p_points[:], return_norm=True)
+            #norms = np.sqrt(p_points[:,0]**2+p_points[:,1]**2)
             max_norm = np.max(norms)
             new_column = norms/max_norm
             new_column = new_column.reshape((new_column.size,1))
             p_points = np.concatenate((p_points, new_column),axis=1)
         return p_points
     elif map_type == 'probability':
+        """if len(points.shape) > 1:
+            size = points.shape[1]
+        else:
+            size = points.shape[0]"""
+        for i, point in enumerate(points):
+            if np.array_equiv(point, np.zeros_like(point)):
+                point = np.ones_like(point)*((1/points.shape[1])**(1/2))
+            points[i] = point
         p_points, norms = normalize(points[:], return_norm=True)
         return p_points, norms
 
@@ -140,7 +149,10 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
             else:
                 return data['0'*(qubits*2)+'1']/shots
     elif map_type == 'probability':
-        qubits = int(np.ceil(np.log2(x.size)))
+        if x.size > 1:
+            qubits = int(np.ceil(np.log2(x.size)))
+        else:
+            qubits = 1
         #print(y)
         n_x = np.zeros(2**qubits)
         n_x[:x.size] = x
@@ -150,8 +162,8 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
         cr = ClassicalRegister(2*qubits + 1, name="cr")
 
         qc = QuantumCircuit(qr, cr, name="k_means")
-        qc.initialize(x,[i+1 for i in range(qubits)])
-        qc.initialize(y,[i+1+qubits for i in range(qubits)])
+        qc.initialize(n_x,[i+1 for i in range(qubits)])         # pylint: disable=no-member
+        qc.initialize(n_y,[i+1+qubits for i in range(qubits)])  # pylint: disable=no-member
 
         qc.h(qr[0])
         for i in range(qubits):
@@ -275,8 +287,8 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 cr = ClassicalRegister(3, name="cr")
 
                 qc = QuantumCircuit(qr, cr, name="k_means")
-                qc.initialize(x,1)
-                qc.initialize(y,2)
+                qc.initialize(x,1)  # pylint: disable=no-member
+                qc.initialize(y,2)  # pylint: disable=no-member
 
                 qc.h(qr[0])
                 qc.cswap(qr[0], qr[1], qr[2])
@@ -367,8 +379,8 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 cr = ClassicalRegister(int(np.log2(B[0].shape[1]))*2+1, name="cr")
 
                 qc = QuantumCircuit(qr, cr, name="k_means")
-                qc.initialize(x,[i+1 for i in range(int(np.log2(B[0].shape[1])))])
-                qc.initialize(y,[i+1+int(np.log2(B[0].shape[1])) for i in range(int(np.log2(B[0].shape[1])))])
+                qc.initialize(x,[i+1 for i in range(int(np.log2(B[0].shape[1])))])                              # pylint: disable=no-member
+                qc.initialize(y,[i+1+int(np.log2(B[0].shape[1])) for i in range(int(np.log2(B[0].shape[1])))])  # pylint: disable=no-member
 
                 qc.h(qr[0])
                 for i in range(int(np.log2(B[0].shape[1]))):
@@ -430,8 +442,8 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
                 cr = ClassicalRegister(qubits*2+1, name="cr")
 
                 qc = QuantumCircuit(qr, cr, name="k_means")
-                qc.initialize(x,[i+1 for i in range(qubits)])
-                qc.initialize(y,[i+1+qubits for i in range(qubits)])
+                qc.initialize(x,[i+1 for i in range(qubits)])           # pylint: disable=no-member
+                qc.initialize(y,[i+1+qubits for i in range(qubits)])    # pylint: disable=no-member
 
                 qc.h(qr[0])
                 for i in qubits:
@@ -669,7 +681,7 @@ class QuantumKMeans():
         labels_: Centroid labels for each data point.
         n_iter_: Number of iterations run before convergence.
     """
-    def __init__(self, backend=IBMQ.load_account().get_backend('ibmq_qasm_simulator'), n_clusters=2, init='qk-means++', tol=0.0001, max_iter=300, verbose=False, map_type='probability', shots=1024, norm_relevance=False, initial_center='random'):
+    def __init__(self, backend=Aer.get_backend("aer_simulator_statevector"), n_clusters=2, init='qk-means++', tol=0.0001, max_iter=300, verbose=False, map_type='probability', shots=1024, norm_relevance=False, initial_center='random'):
         """Initializes an instance of the quantum k-means algorithm."""
         self.cluster_centers_ = np.empty(0)
         self.labels_ = np.empty(0)
@@ -685,7 +697,7 @@ class QuantumKMeans():
         self.norm_relevance = norm_relevance
         self.initial_center = initial_center
 
-    def fit(self, X, batch=True):
+    def fit(self, X, batch=False):
         """Computes quantum k-means clustering.
 
         Args:
@@ -708,7 +720,7 @@ class QuantumKMeans():
             self.cluster_centers_, _ = qkmeans_plusplus(X, self.n_clusters, self.backend, self.map_type, self.verbose, self.initial_center, shots=self.shots, batch=batch, norms=norms)
             self.cluster_centers_ = pd.DataFrame(self.cluster_centers_).values
         elif self.init == 'random':
-            self.cluster_centers_ = old_X.sample(n=self.n_clusters).reset_index(drop=True)
+            self.cluster_centers_ = old_X.sample(n=self.n_clusters)
         #print('Cluster centers are:', self.cluster_centers_)
         iteration = 0
         while not finished and iteration<self.max_iter:
@@ -723,7 +735,9 @@ class QuantumKMeans():
                 distances = batch_distances(X, normalized_clusters, self.backend, self.map_type, self.shots, self.verbose, norms, cluster_norms)
             else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
             self.labels_ = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
-            new_centroids = old_X.groupby(self.labels_).mean()
+            print('self labels', self.labels_)
+            new_centroids = old_X.groupby(self.labels_).mean() #Needs to be checked to see if less centers are an option
+            print('new centroids', new_centroids)
             if self.verbose:
                 print("Old centroids are",self.cluster_centers_)
             if self.verbose:
@@ -737,7 +751,7 @@ class QuantumKMeans():
             iteration += 1
         return self
 
-    def predict(self, X, sample_weight = None, batch = True):
+    def predict(self, X, sample_weight = None, batch = False):
         """Predict the closest cluster each sample in X belongs to.
 
         Args:
