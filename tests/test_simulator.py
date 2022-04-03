@@ -150,10 +150,10 @@ def test_distance_probability(x_y, qkmeans):
 
 @given(data = arrays(np.float32,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=32)), n_clusters = integers(min_value=2, max_value=8))
 @settings(deadline=None)
-def test_fit(data, n_clusters, qkmeans):
+def test_fit(data, n_clusters):
     assume(np.isfinite(data).all())
-    assume(data.shape[0] >= qkmeans.n_clusters)
     qkmeans = QuantumKMeans(max_iter=2, init='random', n_clusters=n_clusters)
+    assume(data.shape[0] >= qkmeans.n_clusters)
     data = data.astype('float64')
     qkmeans.fit(data)
     assert qkmeans.labels_.size == data.shape[0]
