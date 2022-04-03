@@ -23,6 +23,6 @@ jobs:
     - name: Coveralls Github Action
       uses: coverallsapp/github-action@1.1.3
       with:
-        github-token:
+        github-token: ${{ secrets.github_token }}
         path-to-lcov: ./coverage/lcov.info
         
