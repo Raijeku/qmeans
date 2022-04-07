@@ -1,13 +1,13 @@
-tests package
-=============
+qmeans package
+==============
 
 Submodules
 ----------
 
-tests.test\_simulator module
-----------------------------
+qkmeans module
+---------------------
 
-.. automodule:: tests.test_simulator
+.. automodule:: qkmeans
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ tests.test\_simulator module
 Module contents
 ---------------
 
-.. automodule:: tests
+.. automodule:: qmeans
    :members:
    :undoc-members:
    :show-inheritance:
