@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Coveralls
+name: Codecov
 
 on: [push]
 
@@ -34,6 +34,11 @@ jobs:
     #    pip install pytest
     #    pip install pytest-cov
     #    pytest --cov=./ --cov-report=xml
+    - name: Generate coverage report
+      run: |
+        pip install pytest
+        pip install pytest-cov
+        pytest --cov=./ --cov-report=xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:
