@@ -22,7 +22,7 @@ jobs:
         pip install coveralls
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Coveralls Github Action
-      run: coveralls --service=github
+      run: coveralls --service=github-actions
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: coverage/lcov.info
