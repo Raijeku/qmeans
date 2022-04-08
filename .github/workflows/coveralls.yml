@@ -24,6 +24,6 @@ jobs:
     - name: Coveralls Github Action
       run: coveralls --service=github
       env:
-        github-token: ${{ secrets.github_token }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: coverage/lcov.info
         
