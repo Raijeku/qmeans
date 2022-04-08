@@ -13,7 +13,7 @@ setup(
    long_description=long_description,
    author='David Quiroga',
    author_email='raijeku@gmail.com',
-   url="http://www.notavailable.com/",
+   url="http://qmeans.readthedocs.io/",
    packages=['qmeans'],
    install_requires=['wheel', 'numpy', 'pandas', 'qiskit', 'sklearn', 'pytest', 'hypothesis', 'sphinx', 'sphinx-rtd-theme', 'sphinxcontrib-napoleon'],
 )
