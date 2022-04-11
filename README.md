@@ -14,7 +14,7 @@ you would use the
 [k-means](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html), and
 many options are available for data encoding and job batching.
 
-> :exclamation: Job batching is introduced as a way to speed up training time on quantum devices for larger datasets. [^2]
+> :exclamation: Job batching is introduced as a way to speed up training time on quantum devices for larger datasets. [2]
 
 ## Installation
 
@@ -24,9 +24,9 @@ As the module is currently under development, no official way to install the mod
 
 ## Publications
 
-[^1]: D. Quiroga, P. Date and R. Pooser, "Discriminating Quantum States with Quantum Machine Learning," 2021 IEEE International Conference on Quantum Computing and Engineering (QCE), 2021, pp. 481-482, doi: 10.1109/QCE52317.2021.00088.
+> [1]: D. Quiroga, P. Date and R. Pooser, "Discriminating Quantum States with Quantum Machine Learning," 2021 IEEE International Conference on Quantum Computing and Engineering (QCE), 2021, pp. 481-482, doi: 10.1109/QCE52317.2021.00088.
 
-[^2]: D. Quiroga, P. Date and R. Pooser, "Discriminating Quantum States with Quantum Machine Learning," 2021 International Conference on Rebooting Computing (ICRC), 2021, pp. 56-63, doi: 10.1109/ICRC53822.2021.00018.
+> [2]: D. Quiroga, P. Date and R. Pooser, "Discriminating Quantum States with Quantum Machine Learning," 2021 International Conference on Rebooting Computing (ICRC), 2021, pp. 56-63, doi: 10.1109/ICRC53822.2021.00018.
       
 ## License
 
