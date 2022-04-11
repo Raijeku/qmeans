@@ -16,15 +16,16 @@ Typical usage example::
     qk_means.fit(X)
     print(qk_means.labels_)
 """
+from typing import Tuple
 import numpy as np
 import pandas as pd
-from qiskit import Aer, IBMQ, execute
-from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister
+from qiskit import Aer, IBMQ, execute, QuantumCircuit, ClassicalRegister, QuantumRegister
+from qiskit.providers.ibmq import IBMQBackend
 from sklearn.preprocessing import normalize, scale
 from sklearn.utils import check_random_state
 from sklearn.utils. extmath import stable_cumsum
 
-def preprocess(points, map_type='angle', norm_relevance=False):
+def preprocess(points: np.ndarray, map_type: str ='angle', norm_relevance: bool = False):
     """Preprocesses data points according to a type criteria.
 
     The algorithm scales the data points if the type is 'angle' and normalizes the data points
@@ -65,7 +66,7 @@ def preprocess(points, map_type='angle', norm_relevance=False):
         p_points, norms = normalize(points[:], return_norm=True)
         return p_points, norms
 
-def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1]), norm_relevance=False):
+def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str = 'angle', shots: int = 1024, norms: np.ndarray = np.array([1, 1]), norm_relevance: bool = False):
     """Finds the distance between two data points by mapping the data points onto qubits using
     amplitude or angle encoding and then using a swap test.
 
@@ -181,7 +182,7 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
             M = data['0'*(qubits*2)+'1']/shots
             return (norms[0]**2 + norms[1] ** 2 - 2*norms[0]*norms[1]*((1 - 2*M)**(1/2)))**(1/2)
 
-def batch_separate(X, clusters, max_experiments, norms, cluster_norms):
+def batch_separate(X: np.ndarray, clusters: np.ndarray, max_experiments: int, norms: np.ndarray, cluster_norms: np.ndarray):
     """Creates batches of pairs of vectors.
 
     Separates data points X and cluster centers into a number of batches of elements for distance
@@ -227,7 +228,7 @@ def batch_separate(X, clusters, max_experiments, norms, cluster_norms):
     else:
         raise NotImplementedError
 
-def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
+def batch_distance(B: Tuple[np.ndarray, np.ndarray], backend: IBMQBackend, norm_B: np.ndarray, map_type: str = 'angle', shots: int = 1024):
     """Finds the distance between pairs of data points and cluster centers inside a batch by
     mapping the data points onto qubits using amplitude or angle encoding and then using a swap test.
 
@@ -460,7 +461,7 @@ def batch_distance(B, backend, norm_B, map_type='angle', shots=1024):
             M = [data[i]['0'*qubits*2+'1']/shots if contained[i]==True else 0.0 for i in range(len(contained))]
             return [(norm_B[0][i]**2 + norm_B[1]**2 -2*norm_B[0][i]*norm_B[1]*((1 - 2*M_i)**(1/2)))**(1/2) for i, M_i in enumerate(M)]
 
-def batch_collect(batch_d, desired_shape):
+def batch_collect(batch_d: np.ndarray, desired_shape: Tuple[int, int]):
     """Collects batches of distances.
 
     Retrieves batches of distances and transforms the shape of the data to a desired shape.
@@ -488,7 +489,7 @@ def batch_collect(batch_d, desired_shape):
     #print('Final Batch D is', final_batch_d)
     return final_batch_d.reshape(desired_shape)
 
-def batch_distances(X, cluster_centers, backend, map_type, shots, verbose, norms, cluster_norms):
+def batch_distances(X: np.ndarray, cluster_centers: np.ndarray, backend: IBMQBackend, map_type: str, shots: int, verbose: bool, norms: np.ndarray, cluster_norms: np.ndarray):
     """Batches data and calculates and collects distances.
 
     Data is separated into batches, sent to the quantum device to calculate distances and the
@@ -526,7 +527,7 @@ def batch_distances(X, cluster_centers, backend, map_type, shots, verbose, norms
     #if verbose: print('Distances are', distances)
     return distances
 
-def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, shots=1024, norms=np.array([1,1]), batch=True, x_squared_norms=None, n_local_trials=None, random_state=None):
+def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_type: str, verbose: bool, initial_center: str, shots: int = 1024, norms: np.ndarray = np.array([1,1]), batch: bool = True, x_squared_norms: np.ndarray = None, n_local_trials: int = None, random_state: int = None):
     """Init n_clusters seeds according to qk-means++.
 
     Selects initial cluster centers for qk-mean clustering in a smart way to speed up convergence.
@@ -681,7 +682,7 @@ class QuantumKMeans():
         labels_: Centroid labels for each data point.
         n_iter_: Number of iterations run before convergence.
     """
-    def __init__(self, backend=Aer.get_backend("aer_simulator_statevector"), n_clusters=2, init='qk-means++', tol=0.0001, max_iter=300, verbose=False, map_type='probability', shots=1024, norm_relevance=False, initial_center='random'):
+    def __init__(self, backend: IBMQBackend = Aer.get_backend("aer_simulator_statevector"), n_clusters: int = 2, init: str = 'qk-means++', tol: float = 0.0001, max_iter: int = 300, verbose: bool = False, map_type: str = 'probability', shots: int = 1024, norm_relevance: bool = False, initial_center: str = 'random'):
         """Initializes an instance of the quantum k-means algorithm."""
         self.cluster_centers_ = np.empty(0)
         self.labels_ = np.empty(0)
@@ -697,7 +698,7 @@ class QuantumKMeans():
         self.norm_relevance = norm_relevance
         self.initial_center = initial_center
 
-    def fit(self, X, batch=False):
+    def fit(self, X: np.ndarray, batch: bool = False):
         """Computes quantum k-means clustering.
 
         Args:
@@ -751,7 +752,7 @@ class QuantumKMeans():
             iteration += 1
         return self
 
-    def predict(self, X, sample_weight = None, batch = False):
+    def predict(self, X: np.ndarray, sample_weight: np.ndarray = None, batch: bool = False):
         """Predict the closest cluster each sample in X belongs to.
 
         Args:
@@ -776,7 +777,7 @@ class QuantumKMeans():
         labels = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
         return labels
 
-    def get_params(self, deep=True):
+    def get_params(self, deep: bool = True):
         """Get parameters for this estimator.
 
         Args:
