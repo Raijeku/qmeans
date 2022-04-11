@@ -38,7 +38,7 @@ def preprocess(points, map_type='angle', norm_relevance=False):
             'probability': Relies on data normalization to preprocess the data to acquire a norm of
             1.
         norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between
-        both data points and another for the magnitude of the data points.
+            both data points and another for the magnitude of the data points.
 
     Returns:
         p_points: Preprocessed points.
@@ -83,7 +83,7 @@ def distance(x, y, backend, map_type='angle', shots=1024, norms=np.array([1, 1])
             1.
         shots: Number of repetitions of each circuit, for sampling.
         norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between
-        both data points and another for the magnitude of the data points.
+            both data points and another for the magnitude of the data points.
 
     Returns:
         distance: Distance between the two data points.
@@ -547,15 +547,15 @@ def qkmeans_plusplus(X, n_clusters, backend, map_type, verbose, initial_center, 
             'far': Specifies the furthest point as the initial center.
         x_squared_norms: Squared Euclidean norm of each data point.
         n_local_trials: The number of seeding trials for each center (except the first), of which
-        the one reducing inertia the most is greedily chosen. Set to None to make the number of
-        trials depend logarithmically on the number of seeds (2+log(k)).
-        random_state: Determines random number generation for centroid initialization. Pass an int
-        for reproducible output across multiple function calls.
+            the one reducing inertia the most is greedily chosen. Set to None to make the number of
+            trials depend logarithmically on the number of seeds (2+log(k)).
+            random_state: Determines random number generation for centroid initialization. Pass an int
+            for reproducible output across multiple function calls.
 
     Returns:
         centers: The initial centers for qk-means.
         indices: The index location of the chosen centers in the data array X. For a given index
-        and center, X[index] = center.
+            and center, X[index] = center.
     """
     if verbose:
         print('Started Qkmeans++')
@@ -654,12 +654,12 @@ class QuantumKMeans():
             speed up convergence.
             'random': choose n_clusters observations (rows) at random from data for the initial
             centroids.
-        If an array is passed, it should be of shape (n_clusters, n_features) and gives the initial
-        centers.
-        If a callable is passed, it should take arguments X, n_clusters and a random state and
-        return an initialization.
+            If an array is passed, it should be of shape (n_clusters, n_features) and gives the initial
+            centers.
+            If a callable is passed, it should take arguments X, n_clusters and a random state and
+            return an initialization.
         tol: Relative tolerance with regards to Frobenius norm of the difference in the cluster
-        centers of two consecutive iterations to declare convergence.
+            centers of two consecutive iterations to declare convergence.
         verbose: Defines if verbosity is active for deeper insight into the class processes.
         max_iter: Maximum number of iterations of the quantum k-means algorithm for a single run.
         backend: IBM quantum device to run the quantum k-means algorithm on.
@@ -670,9 +670,9 @@ class QuantumKMeans():
             1.
         shots: Number of repetitions of each circuit, for sampling.
         norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between
-        both data points and another for the magnitude of the data points.
+            both data points and another for the magnitude of the data points.
         initial_center: {'random', 'far'} Speficies the strategy for setting the initial cluster
-        center.
+            center.
             'random': Assigns a random initial center.
             'far': Specifies the furthest point as the initial center.
 
@@ -781,7 +781,7 @@ class QuantumKMeans():
 
         Args:
             deep: If True, will return the parameters for this estimator and contained subobjects
-            that are estimators.
+                that are estimators.
 
         Returns:
             params: Parameter names mapped to their values.
