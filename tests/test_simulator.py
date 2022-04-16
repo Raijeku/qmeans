@@ -74,12 +74,12 @@ def test_preprocess_probability(data):
     assert np.allclose(preprocessed_data, verification_data)
     assert np.allclose(norms, verification_norms)
 
-"""@given(arrays(np.float64,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=100)))
+@given(arrays(np.float32,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=100)))
 def test_preprocess_angle(data):
     assume(np.isfinite(data).all())
     data = data.astype('float64')
     preprocessed_data = preprocess(data, map_type='angle', norm_relevance=False)
-    if np.allclose(data, np.ones_like(data)*data[0]):
+    if np.array_equiv(data, np.ones_like(data)*data[0]):
         verification_data = np.zeros_like(preprocessed_data)
     else:
         mean = data.mean(axis=0)
@@ -87,6 +87,22 @@ def test_preprocess_angle(data):
         #std[std == 0] = 1
         verification_data = (data-mean)/std
         verification_data[np.isnan(verification_data)] = 0
+    assert np.allclose(preprocessed_data, verification_data)
+
+"""def test_preprocess_angle(data):
+    assume(np.isfinite(data).all())
+    data = data.astype('float64')
+    preprocessed_data = preprocess(data, map_type='angle', norm_relevance=False)
+    if np.array_equiv(data, np.ones_like(data)*data[0]):
+        verification_data = np.zeros_like(preprocessed_data)
+    else:
+        mean = data.mean(axis=0)
+        std = data.std(axis=0)
+        #std[std == 0] = 1
+        verification_data = (data-mean)/std
+        verification_data[np.isnan(verification_data)] = 0
+    print(preprocessed_data)
+    print(verification_data)
     assert np.allclose(preprocessed_data, verification_data)"""
 
 """@given(arrays(np.float64,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=100)))
