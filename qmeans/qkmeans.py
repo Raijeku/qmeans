@@ -46,8 +46,13 @@ def preprocess(points: np.ndarray, map_type: str ='angle', norm_relevance: bool 
     """
     if map_type == 'angle':
         p_points = scale(points[:])
+        a_points = points.copy()
         if norm_relevance is True:
-            _, norms = normalize(p_points[:], return_norm=True)
+            for i, point in enumerate(a_points):
+                if np.array_equiv(point, np.zeros_like(point)):
+                    point = np.ones_like(point)*((1/a_points.shape[1])**(1/2))
+                a_points[i] = point
+            _, norms = normalize(a_points[:], return_norm=True)
             #norms = np.sqrt(p_points[:,0]**2+p_points[:,1]**2)
             max_norm = np.max(norms)
             new_column = norms/max_norm
