@@ -5,6 +5,8 @@
 # Qmeans
 Q-Means algorithm implementation using Qiskit compatible with Scikit-Learn.
 
+[![Clustering example](https://github.com/Raijeku/discriminating-quantum-states/blob/main/experiments/clustering_0_qubit_both.png)](https://github.com/Raijeku/discriminating-quantum-states)
+
 The **q-means** leverages quantum computing to calculate distances for the centroid assignment part
 of the k-means unsupervised learning algorithm. It shares the same general steps its classical
 counterpart has, and is used alongside quantum simulators and quantum devices. This implementation
@@ -21,6 +23,22 @@ many options are available for data encoding and job batching.
 As the module is currently under development, no official way to install the module is currently released, although it will be available in PyPI and will be installable using the pip command:
 
 `pip install qmeans`
+
+## Usage
+
+Example code for usage of the qmeans algorithm:
+
+```python
+import numpy as np
+import pandas as pd
+from qkmeans import *
+
+backend = Aer.get_backend("aer_simulator_statevector")
+X = pd.DataFrame(np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]]))
+qk_means = QuantumKMeans(backend, n_clusters=2, verbose=True, map_type='angle')
+qk_means.fit(X)
+print(qk_means.labels_)
+```
 
 ## Publications
 

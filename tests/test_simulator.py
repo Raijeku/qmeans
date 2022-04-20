@@ -74,11 +74,14 @@ def test_preprocess_probability(data):
     assert np.allclose(preprocessed_data, verification_data)
     assert np.allclose(norms, verification_norms)
 
-@given(arrays(np.float32,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=100)))
+#works
+"""@given(arrays(np.float32,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=100)))
 def test_preprocess_angle(data):
     assume(np.isfinite(data).all())
     data = data.astype('float64')
     preprocessed_data = preprocess(data, map_type='angle', norm_relevance=False)
+    verification_norms = (data**2).sum(axis=1)**(1/2)
+    verification_norms[verification_norms == 0] = 1
     if np.array_equiv(data, np.ones_like(data)*data[0]):
         verification_data = np.zeros_like(preprocessed_data)
     else:
@@ -87,7 +90,7 @@ def test_preprocess_angle(data):
         #std[std == 0] = 1
         verification_data = (data-mean)/std
         verification_data[np.isnan(verification_data)] = 0
-    assert np.allclose(preprocessed_data, verification_data)
+    assert np.allclose(preprocessed_data, verification_data)"""
 
 """def test_preprocess_angle(data):
     assume(np.isfinite(data).all())
@@ -105,11 +108,34 @@ def test_preprocess_angle(data):
     print(verification_data)
     assert np.allclose(preprocessed_data, verification_data)"""
 
-"""@given(arrays(np.float64,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=100)))
+@given(arrays(np.float32,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=100)))
+#@example(data=np.array([[0., 0.]], dtype=np.float32))
+#@example(data=np.array([[1.]], dtype=np.float32))
+#@example(data=np.array([[0.]], dtype=np.float32))
+@example(data=np.array([[0.], [1.]], dtype=np.float32))
 def test_preprocess_angle_norm_relevance(data):
     assume(np.isfinite(data).all())
+    data = data.astype('float64')
     preprocessed_data = preprocess(data, map_type='angle', norm_relevance=True)
-    if np.allclose(data, np.ones_like(data)*data[0]):
+    preprocessed_norms = preprocessed_data[:,-1:]
+    preprocessed_data = preprocessed_data[:,:-1]
+    print("data")
+    print(data)
+    verification_norms = (data**2).sum(axis=1)**(1/2)
+    print("ver norm")
+    print(verification_norms)
+    #verification_norms[verification_norms == 0] = 1
+    #print(verification_norms)
+    max_norm = np.max(verification_norms)
+    new_column = verification_norms/max_norm
+    print(new_column)
+    #print(preprocessed_norms)
+    #new_column = new_column.reshape((new_column.size,1))
+    verification_norms = np.reshape(new_column, preprocessed_norms.shape)
+    #verification_norms = new_column[:,np.newaxis]
+    #verification_norms = np.concatenate((np.empty_like(data), new_column),axis=1)
+    #verification_norms[verification_norms == 0] = 1
+    if np.array_equiv(data, np.ones_like(data)*data[0]):
         verification_data = np.zeros_like(preprocessed_data)
     else:
         mean = data.mean(axis=0)
@@ -117,7 +143,19 @@ def test_preprocess_angle_norm_relevance(data):
         #std[std == 0] = 1
         verification_data = (data-mean)/std
         verification_data[np.isnan(verification_data)] = 0
-    assert np.allclose(preprocessed_data, verification_data)"""
+
+    verification_norms[np.isnan(verification_norms)] = 0
+
+    print("Preprocessed data")
+    print(preprocessed_data[:5])
+    print("Verification data")
+    print(verification_data[:5])
+    print("Preprocessed norms")
+    print(preprocessed_norms[:5])
+    print("Verification norms")
+    print(verification_norms[:5])
+    assert np.allclose(preprocessed_data, verification_data)
+    assert np.allclose(preprocessed_norms, verification_norms)
 
 """@given(x=arrays(np.float64, integers(min_value=2, max_value=100)), y=arrays(np.float64, integers(min_value=2, max_value=100)))
 @settings(deadline=None)
@@ -138,7 +176,8 @@ def point(draw):
     y = draw(arrays(np.float32, size))
     return (x, y)
 
-@given(x_y = point())
+#works
+"""@given(x_y = point())
 @settings(deadline=None)
 def test_distance_probability(x_y, qkmeans):
     x = x_y[0].astype('float64')
@@ -149,7 +188,7 @@ def test_distance_probability(x_y, qkmeans):
     y, y_norm = preprocess(y.reshape(1,-1), map_type='probability')
     point_distance = distance(x[0], y[0], qkmeans.backend, map_type='probability', norms=np.array([x_norm[0], y_norm[0]]))
     assert np.isscalar(point_distance)
-    assert point_distance >= 0
+    assert point_distance >= 0"""
 
 """def test_distance_probability(x, y, qkmeans):
     assume(np.isfinite(x).all())
@@ -164,7 +203,8 @@ def test_distance_probability(x_y, qkmeans):
     assert np.isscalar(point_distance)
     assert point_distance >= 0"""
 
-@given(data = arrays(np.float32,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=32)), n_clusters = integers(min_value=2, max_value=8))
+#works
+"""@given(data = arrays(np.float32,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=32)), n_clusters = integers(min_value=2, max_value=8))
 @settings(deadline=None)
 def test_fit(data, n_clusters):
     assume(np.isfinite(data).all())
@@ -174,15 +214,16 @@ def test_fit(data, n_clusters):
     qkmeans.fit(data)
     assert qkmeans.labels_.size == data.shape[0]
     assert qkmeans.cluster_centers_.shape[0] <= qkmeans.n_clusters
-    assert qkmeans.n_iter_ <= qkmeans.max_iter
+    assert qkmeans.n_iter_ <= qkmeans.max_iter"""
 
-@given(data = arrays(np.float32,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=32)), n_clusters = integers(min_value=2, max_value=8))
+#works
+"""@given(data = arrays(np.float32,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=32)), n_clusters = integers(min_value=2, max_value=8))
 @settings(deadline=None)
 def test_predict(data, n_clusters, qkmeans):
     assume(np.isfinite(data).all())
-    assume(data.shape[0] >= qkmeans.n_clusters)
     qkmeans = QuantumKMeans(max_iter=2, init='random', n_clusters=n_clusters)
+    assume(data.shape[0] >= qkmeans.n_clusters)
     data = data.astype('float64')
     qkmeans.fit(data)
     labels = qkmeans.predict(data)
-    assert np.array_equiv(labels, qkmeans.labels_)
+    assert np.array_equiv(labels, qkmeans.labels_)"""
