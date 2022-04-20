@@ -5,7 +5,7 @@
 # Qmeans
 Q-Means algorithm implementation using Qiskit compatible with Scikit-Learn.
 
-[![Clustering example](https://github.com/Raijeku/discriminating-quantum-states/blob/main/experiments/clustering_0_qubit_both.png)](https://github.com/Raijeku/discriminating-quantum-states)
+[![Clustering example](https://raw.githubusercontent.com/Raijeku/discriminating-quantum-states/main/experiments/clustering_0_qubit_both.png)](https://github.com/Raijeku/discriminating-quantum-states)
 
 The **q-means** leverages quantum computing to calculate distances for the centroid assignment part
 of the k-means unsupervised learning algorithm. It shares the same general steps its classical
