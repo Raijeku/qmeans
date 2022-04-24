@@ -8,11 +8,11 @@ Typical usage example::
     
     import numpy as np
     import pandas as pd
-    from qkmeans import *
+    from qmeans.qkmeans import *
 
     backend = Aer.get_backend("aer_simulator_statevector")
     X = pd.DataFrame(np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]]))
-    qk_means = QuantumKMeans(backend, n_clusters=2, verbose=True, map_type='angle')
+    qk_means = QuantumKMeans(backend, n_clusters=2, verbose=True)
     qk_means.fit(X)
     print(qk_means.labels_)
 """
@@ -24,6 +24,7 @@ from qiskit.providers.ibmq import IBMQBackend
 from sklearn.preprocessing import normalize, scale
 from sklearn.utils import check_random_state
 from sklearn.utils. extmath import stable_cumsum
+from sklearn.base import BaseEstimator
 
 def preprocess(points: np.ndarray, map_type: str ='angle', norm_relevance: bool = False):
     """Preprocesses data points according to a type criteria.
@@ -64,14 +65,24 @@ def preprocess(points: np.ndarray, map_type: str ='angle', norm_relevance: bool 
             size = points.shape[1]
         else:
             size = points.shape[0]"""
+        """print("pre points")
+        print(points)
+        print(type(points))
+        #i = 0
+        points = points.to_numpy()
         for i, point in enumerate(points):
             if np.array_equiv(point, np.zeros_like(point)):
                 point = np.ones_like(point)*((1/points.shape[1])**(1/2))
             points[i] = point
+            print(point)
+            #i += 1
+        print("post points")
+        print(points)
+        points = pd.DataFrame(points)"""
         p_points, norms = normalize(points[:], return_norm=True)
         return p_points, norms
 
-def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str = 'angle', shots: int = 1024, norms: np.ndarray = np.array([1, 1]), norm_relevance: bool = False):
+def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str = 'probability', shots: int = 1024, norms: np.ndarray = np.array([1, 1]), norm_relevance: bool = False):
     """Finds the distance between two data points by mapping the data points onto qubits using
     amplitude or angle encoding and then using a swap test.
 
@@ -168,6 +179,8 @@ def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str =
         cr = ClassicalRegister(2*qubits + 1, name="cr")
 
         qc = QuantumCircuit(qr, cr, name="k_means")
+        #print(n_x)
+        #print((n_x**2).sum())
         qc.initialize(n_x,[i+1 for i in range(qubits)])         # pylint: disable=no-member
         qc.initialize(n_y,[i+1+qubits for i in range(qubits)])  # pylint: disable=no-member
 
@@ -648,7 +661,7 @@ def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_t
 
     return centers, indices
 
-class QuantumKMeans():
+class QuantumKMeans(BaseEstimator):
     """Quantum k-means clustering algorithm. This k-means alternative implements quantum machine
     learning to calculate distances between data points and centroids using quantum circuits.
 
@@ -687,11 +700,11 @@ class QuantumKMeans():
         labels_: Centroid labels for each data point.
         n_iter_: Number of iterations run before convergence.
     """
-    def __init__(self, backend: IBMQBackend = Aer.get_backend("aer_simulator_statevector"), n_clusters: int = 2, init: str = 'qk-means++', tol: float = 0.0001, max_iter: int = 300, verbose: bool = False, map_type: str = 'probability', shots: int = 1024, norm_relevance: bool = False, initial_center: str = 'random'):
+    def __init__(self, backend: IBMQBackend = Aer.get_backend("aer_simulator_statevector"), n_clusters: int = 2, init: str = 'random', tol: float = 0.0001, max_iter: int = 300, verbose: bool = False, map_type: str = 'probability', shots: int = 1024, norm_relevance: bool = False, initial_center: str = 'random'):
         """Initializes an instance of the quantum k-means algorithm."""
-        self.cluster_centers_ = np.empty(0)
-        self.labels_ = np.empty(0)
-        self.n_iter_ = 0
+        #self.cluster_centers_ = np.empty(0)
+        #self.labels_ = np.empty(0)
+        #self.n_iter_ = 0
         self.n_clusters = n_clusters
         self.init = init
         self.tol = tol
@@ -703,7 +716,7 @@ class QuantumKMeans():
         self.norm_relevance = norm_relevance
         self.initial_center = initial_center
 
-    def fit(self, X: np.ndarray, batch: bool = False):
+    def fit(self, X: np.ndarray, y: np.ndarray = None, batch: bool = False):
         """Computes quantum k-means clustering.
 
         Args:
@@ -720,7 +733,8 @@ class QuantumKMeans():
         if self.map_type == 'probability':
             X, norms = preprocess(X, self.map_type, self.norm_relevance)
             X = pd.DataFrame(X)
-        else: X = pd.DataFrame(preprocess(X, self.map_type, self.norm_relevance))
+        else: 
+            X = pd.DataFrame(preprocess(X, self.map_type, self.norm_relevance))
         #print('Preprocessed data is:',X)
         if self.init == 'qk-means++':
             self.cluster_centers_, _ = qkmeans_plusplus(X, self.n_clusters, self.backend, self.map_type, self.verbose, self.initial_center, shots=self.shots, batch=batch, norms=norms)
@@ -728,10 +742,10 @@ class QuantumKMeans():
         elif self.init == 'random':
             self.cluster_centers_ = old_X.sample(n=self.n_clusters)
         #print('Cluster centers are:', self.cluster_centers_)
-        iteration = 0
-        while not finished and iteration<self.max_iter:
+        self.n_iter_ = 0
+        while not finished and self.n_iter_ < self.max_iter:
             if self.verbose:
-                print("Iteration",iteration)
+                print("Iteration",self.n_iter_)
             normalized_clusters, cluster_norms = preprocess(self.cluster_centers_.values, self.map_type, self.norm_relevance)
             normalized_clusters = pd.DataFrame(normalized_clusters)
             #print(norms)
@@ -741,9 +755,9 @@ class QuantumKMeans():
                 distances = batch_distances(X, normalized_clusters, self.backend, self.map_type, self.shots, self.verbose, norms, cluster_norms)
             else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
             self.labels_ = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
-            print('self labels', self.labels_)
+            #print('self labels', self.labels_)
             new_centroids = old_X.groupby(self.labels_).mean() #Needs to be checked to see if less centers are an option
-            print('new centroids', new_centroids)
+            #print('new centroids', new_centroids)
             if self.verbose:
                 print("Old centroids are",self.cluster_centers_)
             if self.verbose:
@@ -754,7 +768,6 @@ class QuantumKMeans():
             if self.verbose:
                 print("Centers are", self.labels_)
             self.n_iter_ += 1
-            iteration += 1
         return self
 
     def predict(self, X: np.ndarray, sample_weight: np.ndarray = None, batch: bool = False):
