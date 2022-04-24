@@ -2,7 +2,7 @@
 [![Linter](https://img.shields.io/badge/code%20style-pylint-orange)](https://github.com/PyCQA/pylint)
 [![codecov](https://codecov.io/gh/Raijeku/qmeans/branch/main/graph/badge.svg?token=CC7BQ1P8T8)](https://codecov.io/gh/Raijeku/qmeans)
 
-# Qmeans
+# Q-means
 Q-Means algorithm implementation using Qiskit compatible with Scikit-Learn.
 
 [![Clustering example](https://raw.githubusercontent.com/Raijeku/discriminating-quantum-states/main/experiments/clustering_0_qubit_both.png)](https://github.com/Raijeku/discriminating-quantum-states)
@@ -20,7 +20,7 @@ many options are available for data encoding and job batching.
 
 ## Installation
 
-As the module is currently under development, no official way to install the module is currently released, although it will be available in PyPI and will be installable using the pip command:
+The project is publicly available in PyPI and can be installed using the following command:
 
 `pip install qmeans`
 
@@ -31,14 +31,20 @@ Example code for usage of the qmeans algorithm:
 ```python
 import numpy as np
 import pandas as pd
-from qkmeans import *
+from qmeans.qkmeans import *
 
 backend = Aer.get_backend("aer_simulator_statevector")
 X = pd.DataFrame(np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]]))
-qk_means = QuantumKMeans(backend, n_clusters=2, verbose=True, map_type='angle')
+qk_means = QuantumKMeans(backend, n_clusters=2, verbose=True)
 qk_means.fit(X)
 print(qk_means.labels_)
 ```
+
+## Requirements
+
+Python 3.6+
+
+Q-Means uses [Qiskit](https://github.com/Qiskit/qiskit) for quantum computations, [Scikit-Learn](https://github.com/scikit-learn/scikit-learn) for data preparation and estimator formatting, and [Pandas](https://github.com/pandas-dev/pandas) and [Numpy](https://github.com/numpy/numpy) for data manipulation.
 
 ## Publications
 
