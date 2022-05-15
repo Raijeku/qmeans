@@ -2,10 +2,8 @@
 [![Linter](https://img.shields.io/badge/code%20style-pylint-orange)](https://github.com/PyCQA/pylint)
 [![codecov](https://codecov.io/gh/Raijeku/qmeans/branch/main/graph/badge.svg?token=CC7BQ1P8T8)](https://codecov.io/gh/Raijeku/qmeans)
 
-# Q-means
+[![Clustering example](https://raw.githubusercontent.com/Raijeku/qmeans/main/q-means.png)](https://qmeans.readthedocs.io/)
 Q-Means algorithm implementation using Qiskit compatible with Scikit-Learn.
-
-[![Clustering example](https://raw.githubusercontent.com/Raijeku/discriminating-quantum-states/main/experiments/clustering_0_qubit_both.png)](https://github.com/Raijeku/discriminating-quantum-states)
 
 The **q-means** leverages quantum computing to calculate distances for the centroid assignment part
 of the k-means unsupervised learning algorithm. It shares the same general steps its classical

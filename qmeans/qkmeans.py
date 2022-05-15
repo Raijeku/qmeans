@@ -782,16 +782,32 @@ class QuantumKMeans(BaseEstimator):
         Returns:
             labels: Centroid labels for each data point.
         """
-        X, norms = pd.DataFrame(preprocess(X, self.map_type, self.norm_relevance))
+        print("Before preprocess")
+        print(X)
+        X, norms = preprocess(X, self.map_type, self.norm_relevance)
+        X = pd.DataFrame(X)
+
+        normalized_clusters, cluster_norms = preprocess(self.cluster_centers_.values, self.map_type, self.norm_relevance)
+        normalized_clusters = pd.DataFrame(normalized_clusters)
+
+        print("After preprocess")
         if sample_weight is None:
             if batch:
                 distances = batch_distances(X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose)
-            else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,norms[i,j]) for i,point in X.iterrows()] for j,centroid in self.cluster_centers_.iterrows()])
+            else: 
+                print("Distances are before")
+                print("Good")
+                print(X)
+                print(self.cluster_centers_)
+                print(norms)
+                distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
+                print("Distances are after")
+                print(distances)
         else:
             weight_X = X * sample_weight
             if batch:
                 batch_distances(weight_X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose)
-            else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots) for _,point in weight_X.iterrows()] for _,centroid in self.cluster_centers_.iterrows()])
+            else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i,point in weight_X.iterrows()] for j,centroid in self.cluster_centers_.iterrows()])
         labels = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
         return labels
 

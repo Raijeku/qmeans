@@ -323,10 +323,10 @@ def test_fit(data, n_clusters):
     assert qkmeans.n_iter_ <= qkmeans.max_iter
     """
 
-def test_fit():
+def test_fit_probability():
     data = data_1
     n_clusters = 2
-    qkmeans = QuantumKMeans(max_iter=100, init='random', n_clusters=n_clusters)
+    qkmeans = QuantumKMeans(max_iter=100, init='random', n_clusters=n_clusters, map_type='probability')
     data = data.astype('float64')
     qkmeans.fit(data)
     assert qkmeans.labels_.size == data.shape[0]
@@ -347,10 +347,10 @@ def test_predict(data, n_clusters, qkmeans):
     assert np.array_equiv(labels, qkmeans.labels_)
     """
 
-def test_predict():
+def test_predict_probability():
     data = data_1
     n_clusters = 2
-    qkmeans = QuantumKMeans(max_iter=100, init='random', n_clusters=n_clusters)
+    qkmeans = QuantumKMeans(max_iter=100, init='random', n_clusters=n_clusters, map_type='probability')
     data = data.astype('float64')
     qkmeans.fit(data)
     labels = qkmeans.predict(data)
