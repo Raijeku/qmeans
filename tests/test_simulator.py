@@ -345,10 +345,22 @@ def test_fit(data, n_clusters):
 
 def test_fit_probability_random():
     data = data_1
-    n_clusters = 2
-    qkmeans = QuantumKMeans(max_iter=50, init='random', n_clusters=n_clusters)
+    n_clusters = 3
+    qkmeans = QuantumKMeans(max_iter=50, init='random', n_clusters=n_clusters, verbose = True)
     data = data.astype('float64')
     qkmeans.fit(data)
+    assert qkmeans.cluster_centers_.shape[0] == n_clusters
+    assert qkmeans.labels_.size == data.shape[0]
+    assert qkmeans.cluster_centers_.shape[0] <= qkmeans.n_clusters
+    assert qkmeans.n_iter_ <= qkmeans.max_iter
+
+def test_fit_probability_qmeanspp():
+    data = data_1
+    n_clusters = 3
+    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, verbose = True)
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    assert qkmeans.cluster_centers_.shape[0] == n_clusters
     assert qkmeans.labels_.size == data.shape[0]
     assert qkmeans.cluster_centers_.shape[0] <= qkmeans.n_clusters
     assert qkmeans.n_iter_ <= qkmeans.max_iter
