@@ -10,11 +10,13 @@ from hypothesis.extra.numpy import arrays, array_shapes
 data_1 = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
 x_1 = np.array([1,3,5,7,9])
 y_1 = np.array([1,1,1,1,1])
+x_2 = np.array([1,2])
+y_2 = np.array([10,4])
 
 #works
-@pytest.fixture(scope='module')
-def qkmeans():
-    return QuantumKMeans(max_iter=2, init='random')
+#@pytest.fixture(scope='module')
+#def qkmeans():
+#    return QuantumKMeans(max_iter=2, init='random')
 
 """def test_preprocess_probability(data):
     assume(np.isfinite(data).all())
@@ -114,6 +116,12 @@ def test_preprocess_angle():
         #std[std == 0] = 1
         verification_data = (data-mean)/std
         verification_data[np.isnan(verification_data)] = 0
+    print("Data:")
+    print(data)
+    print("Preprocessed data:")
+    print(preprocessed_data)
+    print("Verification data:")
+    print(verification_data)
     assert np.allclose(preprocessed_data, verification_data)
     
 #works
@@ -285,13 +293,25 @@ def test_distance_probability(x_y, qkmeans):
     assert point_distance >= 0
     """
 
-def test_distance_probability():
+def test_distance_probability_random():
     x = x_1
     y = y_1
-    qkmeans = QuantumKMeans(max_iter=2, init='random', map_type='probability')
+    qkmeans = QuantumKMeans(max_iter=50, init='random', map_type='probability')
     x, x_norm = preprocess(x.reshape(1,-1), map_type='probability')
     y, y_norm = preprocess(y.reshape(1,-1), map_type='probability')
     point_distance = distance(x[0], y[0], qkmeans.backend, map_type='probability', norms=np.array([x_norm[0], y_norm[0]]))
+    assert np.isscalar(point_distance)
+    assert point_distance >= 0
+
+def test_distance_angle_random():
+    x = x_2
+    y = y_2
+    data = np.array([x, y])
+    qkmeans = QuantumKMeans(max_iter=50, init='random', map_type='angle')
+    preprocessed_data = preprocess(data, map_type='angle')
+    x = preprocessed_data[0]
+    y = preprocessed_data[1]
+    point_distance = distance(x, y, qkmeans.backend, map_type='angle')
     assert np.isscalar(point_distance)
     assert point_distance >= 0
 
@@ -323,10 +343,10 @@ def test_fit(data, n_clusters):
     assert qkmeans.n_iter_ <= qkmeans.max_iter
     """
 
-def test_fit():
+def test_fit_probability_random():
     data = data_1
     n_clusters = 2
-    qkmeans = QuantumKMeans(max_iter=100, init='random', n_clusters=n_clusters)
+    qkmeans = QuantumKMeans(max_iter=50, init='random', n_clusters=n_clusters)
     data = data.astype('float64')
     qkmeans.fit(data)
     assert qkmeans.labels_.size == data.shape[0]
@@ -347,10 +367,10 @@ def test_predict(data, n_clusters, qkmeans):
     assert np.array_equiv(labels, qkmeans.labels_)
     """
 
-def test_predict():
+def test_predict_probability_random():
     data = data_1
     n_clusters = 2
-    qkmeans = QuantumKMeans(max_iter=100, init='random', n_clusters=n_clusters)
+    qkmeans = QuantumKMeans(max_iter=50, init='random', n_clusters=n_clusters)
     data = data.astype('float64')
     qkmeans.fit(data)
     labels = qkmeans.predict(data)
