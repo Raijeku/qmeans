@@ -293,7 +293,7 @@ def test_distance_probability(x_y, qkmeans):
     assert point_distance >= 0
     """
 
-def test_distance_probability_random():
+def test_distance_probability():
     x = x_1
     y = y_1
     qkmeans = QuantumKMeans(max_iter=50, init='random', map_type='probability')
@@ -303,7 +303,7 @@ def test_distance_probability_random():
     assert np.isscalar(point_distance)
     assert point_distance >= 0
 
-def test_distance_angle_random():
+def test_distance_angle():
     x = x_2
     y = y_2
     data = np.array([x, y])
@@ -383,6 +383,15 @@ def test_predict_probability_random():
     data = data_1
     n_clusters = 2
     qkmeans = QuantumKMeans(max_iter=50, init='random', n_clusters=n_clusters)
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    labels = qkmeans.predict(data)
+    assert np.array_equiv(labels, qkmeans.labels_)
+
+def test_predict_probability_qmeanspp():
+    data = data_1
+    n_clusters = 2
+    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters)
     data = data.astype('float64')
     qkmeans.fit(data)
     labels = qkmeans.predict(data)
