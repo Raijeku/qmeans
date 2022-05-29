@@ -418,3 +418,21 @@ def test_predict_probability_qmeanspp():
     qkmeans.fit(data)
     labels = qkmeans.predict(data)
     assert np.array_equiv(labels, qkmeans.labels_)
+
+def test_predict_angle_random():
+    data = data_1
+    n_clusters = 2
+    qkmeans = QuantumKMeans(max_iter=50, init='random', n_clusters=n_clusters, map_type='angle')
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    labels = qkmeans.predict(data)
+    assert np.array_equiv(labels, qkmeans.labels_)
+
+def test_predict_angle_qmeanspp():
+    data = data_1
+    n_clusters = 2
+    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, map_type='angle')
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    labels = qkmeans.predict(data)
+    assert np.array_equiv(labels, qkmeans.labels_)
