@@ -596,7 +596,11 @@ def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_t
 
     if batch:
         closest_distances = batch_distances(X, centers[0, np.newaxis], backend, map_type, shots, verbose)
-    else: closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]])) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[0, np.newaxis]).iterrows()])
+    else: 
+        if map_type == 'probability':
+            closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]])) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[0, np.newaxis]).iterrows()])
+        elif map_type == 'angle':
+            closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[0, np.newaxis]).iterrows()])
     current_pot = closest_distances.sum()
 
     #if verbose:
@@ -612,7 +616,12 @@ def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_t
 
         if batch:
             distance_to_candidates = batch_distances(X, X.values[candidate_ids], backend, map_type, shots, verbose)
-        else: distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]])) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
+        else: 
+            if map_type == 'probability':
+                distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]])) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
+            elif map_type == 'angle':
+                distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
+
 
         np.minimum(closest_distances, distance_to_candidates,
                    out=distance_to_candidates)
@@ -633,7 +642,11 @@ def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_t
         if c == 1 and initial_center == 'far':
             if batch:
                 closest_distances = batch_distances(X, centers[1, np.newaxis], backend, map_type, shots, verbose)
-            else: closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]])) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[1, np.newaxis]).iterrows()])
+            else: 
+                if map_type == 'probability':
+                    closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]])) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[1, np.newaxis]).iterrows()])
+                elif map_type == 'angle':
+                    closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[1, np.newaxis]).iterrows()])
             current_pot = closest_distances.sum()
             rand_vals = random_state.random_sample(n_local_trials) * current_pot
             candidate_ids = np.searchsorted(stable_cumsum(closest_distances), rand_vals)
@@ -642,7 +655,11 @@ def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_t
 
             if batch:
                 distance_to_candidates = batch_distances(X, X.values[candidate_ids], backend, map_type, shots, verbose)
-            else: distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]])) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
+            else: 
+                if map_type == 'probability':
+                    distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]])) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
+                elif map_type == 'angle':
+                    distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
 
             np.minimum(closest_distances, distance_to_candidates,
                     out=distance_to_candidates)
@@ -737,7 +754,10 @@ class QuantumKMeans(BaseEstimator):
             X = pd.DataFrame(preprocess(X, self.map_type, self.norm_relevance))
         #print('Preprocessed data is:',X)
         if self.init == 'qk-means++':
-            self.cluster_centers_, _ = qkmeans_plusplus(X, self.n_clusters, self.backend, self.map_type, self.verbose, self.initial_center, shots=self.shots, batch=batch, norms=norms)
+            if self.map_type == 'probability':
+                self.cluster_centers_, _ = qkmeans_plusplus(X, self.n_clusters, self.backend, self.map_type, self.verbose, self.initial_center, shots=self.shots, batch=batch, norms=norms)
+            elif self.map_type == 'angle':
+                self.cluster_centers_, _ = qkmeans_plusplus(X, self.n_clusters, self.backend, self.map_type, self.verbose, self.initial_center, shots=self.shots, batch=batch)
             self.cluster_centers_ = pd.DataFrame(self.cluster_centers_)#.values
         elif self.init == 'random':
             self.cluster_centers_ = old_X.sample(n=self.n_clusters)
