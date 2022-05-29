@@ -746,14 +746,21 @@ class QuantumKMeans(BaseEstimator):
         while not finished and self.n_iter_ < self.max_iter:
             if self.verbose:
                 print("Iteration",self.n_iter_)
-            normalized_clusters, cluster_norms = preprocess(self.cluster_centers_.values, self.map_type, self.norm_relevance)
+            if self.map_type == 'probability':
+                normalized_clusters, cluster_norms = preprocess(self.cluster_centers_.values, self.map_type, self.norm_relevance)
+            elif self.map_type == 'angle':
+                normalized_clusters = preprocess(self.cluster_centers_.values, self.map_type, self.norm_relevance)
             normalized_clusters = pd.DataFrame(normalized_clusters)
             #print(norms)
             #print(cluster_norms)
             #print(X, normalized_clusters)
             if batch:
                 distances = batch_distances(X, normalized_clusters, self.backend, self.map_type, self.shots, self.verbose, norms, cluster_norms)
-            else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
+            else: 
+                if self.map_type == 'probability':
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
+                elif self.map_type == 'angle':
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
             self.labels_ = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
             #print('self labels', self.labels_)
             new_centroids = old_X.groupby(self.labels_).mean() #Needs to be checked to see if less centers are an option
