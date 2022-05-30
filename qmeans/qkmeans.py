@@ -108,6 +108,14 @@ def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str =
     if map_type == 'angle':
         if x.size == 2:
             qubits = int(np.ceil(np.log2(x.size)))
+            #print("x is")
+            #print(x)
+            #x = x.values
+            #print(x)
+            #print("y is")
+            #print(y)
+            #y = y.values
+            #print(y)
             complexes_x = x[0] + 1j*x[1]
             complexes_y= y[0] + 1j*y[1]
             theta_1 = np.angle(complexes_x)
@@ -814,17 +822,28 @@ class QuantumKMeans(BaseEstimator):
             X = pd.DataFrame(X)
         else: 
             X = pd.DataFrame(preprocess(X, self.map_type, self.norm_relevance))
-        normalized_clusters, cluster_norms = preprocess(self.cluster_centers_.values, self.map_type, self.norm_relevance)
-        normalized_clusters = pd.DataFrame(normalized_clusters)
+        if self.map_type == 'probability':
+            normalized_clusters, cluster_norms = preprocess(self.cluster_centers_.values, self.map_type, self.norm_relevance)
+            normalized_clusters = pd.DataFrame(normalized_clusters)
+        else:
+            normalized_clusters = pd.DataFrame(preprocess(self.cluster_centers_.values, self.map_type, self.norm_relevance))
         if sample_weight is None:
             if batch:
                 distances = batch_distances(X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose)
-            else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i,point in X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
+            else: 
+                if self.map_type == 'probability':
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i,point in X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
+                elif self.map_type == 'angle':
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots) for i,point in X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
         else:
             weight_X = X * sample_weight
             if batch:
                 batch_distances(weight_X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose)
-            else: distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i,point in weight_X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
+            else: 
+                if self.map_type == 'probability': 
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i,point in weight_X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
+                elif self.map_type == 'angle':
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots) for i,point in weight_X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
         labels = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
         return labels
 
