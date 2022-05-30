@@ -365,6 +365,28 @@ def test_fit_probability_qmeanspp():
     assert qkmeans.cluster_centers_.shape[0] <= qkmeans.n_clusters
     assert qkmeans.n_iter_ <= qkmeans.max_iter
 
+def test_fit_angle_random():
+    data = data_1
+    n_clusters = 3
+    qkmeans = QuantumKMeans(max_iter=50, init='random', n_clusters=n_clusters, verbose = True, map_type='angle')
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    assert qkmeans.cluster_centers_.shape[0] == n_clusters
+    assert qkmeans.labels_.size == data.shape[0]
+    assert qkmeans.cluster_centers_.shape[0] <= qkmeans.n_clusters
+    assert qkmeans.n_iter_ <= qkmeans.max_iter
+
+def test_fit_angle_qmeanspp():
+    data = data_1
+    n_clusters = 3
+    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, verbose = True, map_type='angle')
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    assert qkmeans.cluster_centers_.shape[0] == n_clusters
+    assert qkmeans.labels_.size == data.shape[0]
+    assert qkmeans.cluster_centers_.shape[0] <= qkmeans.n_clusters
+    assert qkmeans.n_iter_ <= qkmeans.max_iter
+
 #works
 """
 @given(data = arrays(np.float32,array_shapes(min_dims=2,max_dims=2,min_side=1,max_side=32)), n_clusters = integers(min_value=2, max_value=8))
@@ -392,6 +414,24 @@ def test_predict_probability_qmeanspp():
     data = data_1
     n_clusters = 2
     qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters)
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    labels = qkmeans.predict(data)
+    assert np.array_equiv(labels, qkmeans.labels_)
+
+def test_predict_angle_random():
+    data = data_1
+    n_clusters = 2
+    qkmeans = QuantumKMeans(max_iter=50, init='random', n_clusters=n_clusters, map_type='angle')
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    labels = qkmeans.predict(data)
+    assert np.array_equiv(labels, qkmeans.labels_)
+
+def test_predict_angle_qmeanspp():
+    data = data_1
+    n_clusters = 2
+    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, map_type='angle')
     data = data.astype('float64')
     qkmeans.fit(data)
     labels = qkmeans.predict(data)
