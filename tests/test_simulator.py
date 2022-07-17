@@ -8,10 +8,13 @@ from hypothesis.extra.numpy import arrays, array_shapes
 
 #data_0 = np.array([[5,10]])
 data_1 = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
+data_3 = np.array([[1, 2, 5], [1, 4, 10], [1, 0, -3], [10, 2, 8], [10, 4, 1], [10, 0, 20]])
 x_1 = np.array([1,3,5,7,9])
 y_1 = np.array([1,1,1,1,1])
 x_2 = np.array([1,2])
 y_2 = np.array([10,4])
+x_3 = np.array([14,10,5])
+y_3 = np.array([10,20,2])
 
 def test_get_set_params_probability_random():
     qmeans = QuantumKMeans(max_iter=50, init='random', map_type='probability')
@@ -121,7 +124,7 @@ def test_preprocess_probability(data):
 
 def test_preprocess_angle():
     data = data_1
-    preprocessed_data = preprocess(data, map_type='angle', norm_relevance=False)
+    preprocessed_data = preprocess(data, map_type='angle')
     verification_norms = (data**2).sum(axis=1)**(1/2)
     verification_norms[verification_norms == 0] = 1
     if np.array_equiv(data, np.ones_like(data)*data[0]):
@@ -319,6 +322,16 @@ def test_distance_probability():
     assert np.isscalar(point_distance)
     assert point_distance >= 0
 
+def test_distance_probability_norm_relevance():
+    x = x_3
+    y = y_3
+    qkmeans = QuantumKMeans(max_iter=50, init='random', map_type='probability', norm_relevance=True)
+    x, x_norm = preprocess(x.reshape(1,-1), map_type='probability', norm_relevance=True)
+    y, y_norm = preprocess(y.reshape(1,-1), map_type='probability', norm_relevance=True)
+    point_distance = distance(x[0], y[0], qkmeans.backend, map_type='probability', norms=np.array([x_norm[0], y_norm[0]]), norm_relevance=True)
+    assert np.isscalar(point_distance)
+    assert point_distance >= 0
+
 def test_distance_angle():
     x = x_2
     y = y_2
@@ -385,6 +398,39 @@ def test_fit_probability_qmeanspp_far():
     data = data_1
     n_clusters = 3
     qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, verbose = True, initial_center = 'far')
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    assert qkmeans.cluster_centers_.shape[0] == n_clusters
+    assert qkmeans.labels_.size == data.shape[0]
+    assert qkmeans.cluster_centers_.shape[0] <= qkmeans.n_clusters
+    assert qkmeans.n_iter_ <= qkmeans.max_iter
+
+def test_fit_probability_norm_relevance_random():
+    data = data_3
+    n_clusters = 3
+    qkmeans = QuantumKMeans(max_iter=50, init='random', n_clusters=n_clusters, verbose = True, norm_relevance=True)
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    assert qkmeans.cluster_centers_.shape[0] == n_clusters
+    assert qkmeans.labels_.size == data.shape[0]
+    assert qkmeans.cluster_centers_.shape[0] <= qkmeans.n_clusters
+    assert qkmeans.n_iter_ <= qkmeans.max_iter
+
+def test_fit_probability_norm_relevance_qmeanspp():
+    data = data_3
+    n_clusters = 3
+    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, verbose = True, norm_relevance=True)
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    assert qkmeans.cluster_centers_.shape[0] == n_clusters
+    assert qkmeans.labels_.size == data.shape[0]
+    assert qkmeans.cluster_centers_.shape[0] <= qkmeans.n_clusters
+    assert qkmeans.n_iter_ <= qkmeans.max_iter
+
+def test_fit_probability_norm_relevance_qmeanspp_far():
+    data = data_3
+    n_clusters = 3
+    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, verbose = True, norm_relevance=True, initial_center = 'far')
     data = data.astype('float64')
     qkmeans.fit(data)
     assert qkmeans.cluster_centers_.shape[0] == n_clusters
@@ -461,6 +507,33 @@ def test_predict_probability_qmeanspp_far():
     data = data_1
     n_clusters = 2
     qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, initial_center = 'far')
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    labels = qkmeans.predict(data)
+    assert np.array_equiv(labels, qkmeans.labels_)
+
+def test_predict_probability_norm_relevance_random():
+    data = data_3
+    n_clusters = 2
+    qkmeans = QuantumKMeans(max_iter=50, init='random', n_clusters=n_clusters, norm_relevance=True)
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    labels = qkmeans.predict(data)
+    assert np.array_equiv(labels, qkmeans.labels_)
+
+def test_predict_probability_norm_relevance_qmeanspp():
+    data = data_3
+    n_clusters = 2
+    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, norm_relevance=True)
+    data = data.astype('float64')
+    qkmeans.fit(data)
+    labels = qkmeans.predict(data)
+    assert np.array_equiv(labels, qkmeans.labels_)
+
+def test_predict_probability_norm_relevance_qmeanspp_far():
+    data = data_3
+    n_clusters = 2
+    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, norm_relevance=True, initial_center = 'far')
     data = data.astype('float64')
     qkmeans.fit(data)
     labels = qkmeans.predict(data)
