@@ -13,6 +13,22 @@ y_1 = np.array([1,1,1,1,1])
 x_2 = np.array([1,2])
 y_2 = np.array([10,4])
 
+def test_get_set_params_probability_random():
+    qmeans = QuantumKMeans(max_iter=50, init='random', map_type='probability')
+    params = qmeans.get_params()
+    assert 'n_clusters' in params
+    assert 'init' in params
+    assert 'tol' in params
+    assert 'verbose' in params
+    assert 'max_iter' in params
+    assert 'backend' in params
+    assert 'map_type' in params
+    assert 'shots' in params
+    assert 'norm_relevance' in params
+    assert 'initial_center' in params
+    qmeans.set_params(**params)
+    assert qmeans.get_params() == params
+
 #works
 #@pytest.fixture(scope='module')
 #def qkmeans():
