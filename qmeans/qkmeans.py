@@ -172,7 +172,7 @@ def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str =
             data = result.get_counts()
             if len(data)==1: return 0.0
             else:
-                return data['0'*(qubits*2)+'1']/shots
+                return data['0'*(qubits)+'1']/shots
     elif map_type == 'probability':
         if x.size > 1:
             qubits = int(np.ceil(np.log2(x.size)))
@@ -788,7 +788,8 @@ class QuantumKMeans(BaseEstimator):
                 if self.map_type == 'probability':
                     distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
                 elif self.map_type == 'angle':
-                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([1,1]),self.norm_relevance) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
+            print(distances)
             self.labels_ = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
             #print('self labels', self.labels_)
             new_centroids = old_X.groupby(self.labels_).mean() #Needs to be checked to see if less centers are an option
@@ -834,7 +835,7 @@ class QuantumKMeans(BaseEstimator):
                 if self.map_type == 'probability':
                     distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i,point in X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
                 elif self.map_type == 'angle':
-                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots) for i,point in X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([1,1]),self.norm_relevance) for i,point in X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
         else:
             weight_X = X * sample_weight
             if batch:
@@ -843,7 +844,7 @@ class QuantumKMeans(BaseEstimator):
                 if self.map_type == 'probability': 
                     distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i,point in weight_X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
                 elif self.map_type == 'angle':
-                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots) for i,point in weight_X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([1,1]),self.norm_relevance) for i,point in weight_X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
         labels = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
         return labels
 
