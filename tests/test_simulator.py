@@ -6,8 +6,8 @@ from hypothesis import given, assume, settings, example
 from hypothesis.strategies import lists, integers, composite
 from hypothesis.extra.numpy import arrays, array_shapes
 
-#data_0 = np.array([[5,10]])
 data_1 = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
+data_2 = np.array([[1, 5], [1, 10], [1, -3]])
 data_3 = np.array([[1, 2, 5], [1, 4, 10], [1, 0, -3], [10, 2, 8], [10, 4, 1], [10, 0, 20]])
 x_1 = np.array([1,3,5,7,9])
 y_1 = np.array([1,1,1,1,1])
@@ -15,6 +15,7 @@ x_2 = np.array([1,2])
 y_2 = np.array([10,4])
 x_3 = np.array([14,10,5])
 y_3 = np.array([10,20,2])
+x_4 = np.array([1,3,5,7,9,11])
 
 def test_get_set_params_probability_random():
     qmeans = QuantumKMeans(max_iter=50, init='random', map_type='probability')
