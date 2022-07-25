@@ -1,7 +1,10 @@
+import qiskit
 from qmeans.qkmeans import *
 from qiskit import IBMQ
-provider = IBMQ.load_account()
-backend = provider.get_backend('ibmq_qasm_simulator')
+import pytest
+#IBMQ.save_account(qiskit_token)
+#provider = IBMQ.load_account()
+#backend = provider.get_backend('ibmq_qasm_simulator')
 
 data_1 = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
 data_2 = np.array([[1, 5], [1, 10], [1, -3]])
@@ -16,6 +19,14 @@ y_2 = np.array([10,4])
 x_3 = np.array([14,10,5])
 y_3 = np.array([10,20,2])
 x_4 = np.array([1,3,5,7,9,11])
+
+#def test_wut(qiskit_token):
+#    print(qiskit_token)
+#    assert False
+
+@pytest.fixture(scope='session')
+def setup_qiskit(qiskit_token):
+    IBMQ.save_account(qiskit_token)
 
 def test_batch_separate():
     X = data_1
@@ -37,6 +48,8 @@ def test_batch_distance_probability():
     X, norms = preprocess(X, 'probability')
     cluster_centers, cluster_norms = preprocess(cluster_centers, 'probability')
     max_experiments = 4
+    provider = IBMQ.load_account()
+    backend = provider.get_backend('ibmq_qasm_simulator')
     qkmeans = QuantumKMeans(backend = backend, max_iter=50, init='random', n_clusters=len(cluster_centers), verbose = True, map_type='probability')
     batches, norm_batches = batch_separate(X, cluster_centers, max_experiments, norms, cluster_norms)
     #print(batches)

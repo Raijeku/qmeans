@@ -42,7 +42,7 @@ jobs:
       run: |
         pip install pytest
         pip install pytest-cov
-        pytest --cov=./ --cov-report=xml
+        pytest --qiskit_token=${{ secrets.QISKIT_TOKEN }} --cov=./ --cov-report=xml
       continue-on-error: true
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
