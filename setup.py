@@ -16,5 +16,6 @@ setup(
    author_email='raijeku@gmail.com',
    url="http://qmeans.readthedocs.io/",
    packages=['qmeans'],
-   install_requires=['wheel', 'twine', 'setuptools', 'numpy', 'pandas', 'qiskit', 'sklearn', 'pytest', 'hypothesis', 'sphinx', 'sphinx-rtd-theme', 'sphinxcontrib-napoleon'],
+   install_requires=['wheel', 'twine', 'setuptools', 'numpy', 'pandas', 'qiskit', 'sklearn',
+   'pytest', 'hypothesis', 'sphinx', 'sphinx-rtd-theme', 'sphinxcontrib-napoleon'],
 )
