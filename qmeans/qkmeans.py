@@ -25,6 +25,7 @@ from sklearn.preprocessing import normalize, scale
 from sklearn.utils import check_random_state
 from sklearn.utils. extmath import stable_cumsum
 from sklearn.base import BaseEstimator
+from qiskit.providers.aer.noise import NoiseModel
 
 def preprocess(points: np.ndarray, map_type: str ='angle', norm_relevance: bool = False):
     """Preprocesses data points according to a type criteria.
@@ -82,7 +83,7 @@ def preprocess(points: np.ndarray, map_type: str ='angle', norm_relevance: bool 
         p_points, norms = normalize(points[:], return_norm=True)
         return p_points, norms
 
-def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str = 'probability', shots: int = 1024, norms: np.ndarray = np.array([1, 1]), norm_relevance: bool = False):
+def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str = 'probability', shots: int = 1024, norms: np.ndarray = np.array([1, 1]), norm_relevance: bool = False, noise_model: NoiseModel = None):
     """Finds the distance between two data points by mapping the data points onto qubits using
     amplitude or angle encoding and then using a swap test.
 
@@ -101,6 +102,7 @@ def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str =
         shots: Number of repetitions of each circuit, for sampling.
         norm_relevance: If true, maps two-dimensional data onto 2 angles, one for the angle between
             both data points and another for the magnitude of the data points.
+        noise_model: Noise model to use when runnings circuits on a simulator.
 
     Returns:
         distance: Distance between the two data points.
@@ -135,7 +137,7 @@ def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str =
 
             qc.measure(qr[0], cr[0])
             qc.reset(qr)
-            job = execute(qc,backend=backend, shots=shots)
+            job = execute(qc,backend=backend, shots=shots, noise_model=noise_model)
             result = job.result()
             data = result.get_counts()
             if len(data)==1:
@@ -167,7 +169,7 @@ def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str =
 
             qc.measure(qr[0], cr[0])
             qc.reset(qr)
-            job = execute(qc,backend=backend, shots=shots)
+            job = execute(qc,backend=backend, shots=shots, noise_model=noise_model)
             result = job.result()
             data = result.get_counts()
             if len(data)==1: return 0.0
@@ -199,7 +201,7 @@ def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str =
 
         qc.measure(qr[0], cr[0])
         qc.reset(qr)
-        job = execute(qc,backend=backend, shots=shots)
+        job = execute(qc,backend=backend, shots=shots, noise_model=noise_model)
         result = job.result()
         data = result.get_counts()
         if len(data)==1:
@@ -553,7 +555,7 @@ def batch_distances(X: np.ndarray, cluster_centers: np.ndarray, backend: IBMQBac
     #if verbose: print('Distances are', distances)
     return distances
 
-def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_type: str, verbose: bool, initial_center: str, shots: int = 1024, norms: np.ndarray = np.array([1,1]), batch: bool = True, x_squared_norms: np.ndarray = None, n_local_trials: int = None, random_state: int = None):
+def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_type: str, verbose: bool, initial_center: str, shots: int = 1024, norms: np.ndarray = np.array([1,1]), batch: bool = True, x_squared_norms: np.ndarray = None, n_local_trials: int = None, random_state: int = None, noise_model: NoiseModel = None):
     """Init n_clusters seeds according to qk-means++.
 
     Selects initial cluster centers for qk-mean clustering in a smart way to speed up convergence.
@@ -578,6 +580,7 @@ def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_t
             trials depend logarithmically on the number of seeds (2+log(k)).
             random_state: Determines random number generation for centroid initialization. Pass an int
             for reproducible output across multiple function calls.
+        noise_model: Noise model to use when runnings circuits on a simulator.
 
     Returns:
         centers: The initial centers for qk-means.
@@ -606,9 +609,9 @@ def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_t
         closest_distances = batch_distances(X, centers[0, np.newaxis], backend, map_type, shots, verbose)
     else: 
         if map_type == 'probability':
-            closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]])) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[0, np.newaxis]).iterrows()])
+            closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]]),noise_model=noise_model) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[0, np.newaxis]).iterrows()])
         elif map_type == 'angle':
-            closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[0, np.newaxis]).iterrows()])
+            closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots,noise_model=noise_model) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[0, np.newaxis]).iterrows()])
     current_pot = closest_distances.sum()
 
     #if verbose:
@@ -626,9 +629,9 @@ def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_t
             distance_to_candidates = batch_distances(X, X.values[candidate_ids], backend, map_type, shots, verbose)
         else: 
             if map_type == 'probability':
-                distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]])) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
+                distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]]),noise_model=noise_model) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
             elif map_type == 'angle':
-                distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
+                distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots,noise_model=noise_model) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
 
 
         np.minimum(closest_distances, distance_to_candidates,
@@ -652,9 +655,9 @@ def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_t
                 closest_distances = batch_distances(X, centers[1, np.newaxis], backend, map_type, shots, verbose)
             else: 
                 if map_type == 'probability':
-                    closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]])) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[1, np.newaxis]).iterrows()])
+                    closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]]),noise_model=noise_model) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[1, np.newaxis]).iterrows()])
                 elif map_type == 'angle':
-                    closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[1, np.newaxis]).iterrows()])
+                    closest_distances = np.asarray([[distance(point,centroid,backend,map_type,shots,noise_model=noise_model) for i, point in X.iterrows()] for j, centroid in pd.DataFrame(centers[1, np.newaxis]).iterrows()])
             current_pot = closest_distances.sum()
             rand_vals = random_state.random_sample(n_local_trials) * current_pot
             candidate_ids = np.searchsorted(stable_cumsum(closest_distances), rand_vals)
@@ -665,9 +668,9 @@ def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_t
                 distance_to_candidates = batch_distances(X, X.values[candidate_ids], backend, map_type, shots, verbose)
             else: 
                 if map_type == 'probability':
-                    distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]])) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
+                    distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots,np.array([norms[i],norms[j]]),noise_model=noise_model) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
                 elif map_type == 'angle':
-                    distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
+                    distance_to_candidates = np.asarray([[distance(point,centroid,backend,map_type,shots,noise_model=noise_model) for i, point in X.iterrows()] for j, centroid in X.iloc[candidate_ids].iterrows()])
 
             np.minimum(closest_distances, distance_to_candidates,
                     out=distance_to_candidates)
@@ -719,13 +722,14 @@ class QuantumKMeans(BaseEstimator):
             center.
             'random': Assigns a random initial center.
             'far': Specifies the furthest point as the initial center.
+        noise_model: Noise model to use when runnings circuits on a simulator.
 
     Attributes:
         cluster_centers_: Coordinates of cluster centers.
         labels_: Centroid labels for each data point.
         n_iter_: Number of iterations run before convergence.
     """
-    def __init__(self, backend: IBMQBackend = Aer.get_backend("aer_simulator_statevector"), n_clusters: int = 2, init: str = 'random', tol: float = 0.0001, max_iter: int = 300, verbose: bool = False, map_type: str = 'probability', shots: int = 1024, norm_relevance: bool = False, initial_center: str = 'random'):
+    def __init__(self, backend: IBMQBackend = Aer.get_backend("aer_simulator_statevector"), n_clusters: int = 2, init: str = 'random', tol: float = 0.0001, max_iter: int = 300, verbose: bool = False, map_type: str = 'probability', shots: int = 1024, norm_relevance: bool = False, initial_center: str = 'random', noise_model: NoiseModel = None):
         """Initializes an instance of the quantum k-means algorithm."""
         #self.cluster_centers_ = np.empty(0)
         #self.labels_ = np.empty(0)
@@ -740,6 +744,7 @@ class QuantumKMeans(BaseEstimator):
         self.shots = shots
         self.norm_relevance = norm_relevance
         self.initial_center = initial_center
+        self.noise_model = noise_model
 
     def fit(self, X: np.ndarray, y: np.ndarray = None, batch: bool = False):
         """Computes quantum k-means clustering.
@@ -786,9 +791,9 @@ class QuantumKMeans(BaseEstimator):
                 distances = batch_distances(X, normalized_clusters, self.backend, self.map_type, self.shots, self.verbose, norms, cluster_norms)
             else: 
                 if self.map_type == 'probability':
-                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]]),noise_model=self.noise_model) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
                 elif self.map_type == 'angle':
-                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([1,1]),self.norm_relevance) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([1,1]),self.norm_relevance,noise_model=self.noise_model) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
             print(distances)
             self.labels_ = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
             #print('self labels', self.labels_)
@@ -833,18 +838,18 @@ class QuantumKMeans(BaseEstimator):
                 distances = batch_distances(X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose)
             else: 
                 if self.map_type == 'probability':
-                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i,point in X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]]),noise_model=self.noise_model) for i,point in X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
                 elif self.map_type == 'angle':
-                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([1,1]),self.norm_relevance) for i,point in X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([1,1]),self.norm_relevance,noise_model=self.noise_model) for i,point in X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
         else:
             weight_X = X * sample_weight
             if batch:
                 batch_distances(weight_X, self.cluster_centers_, self.backend, self.map_type, self.shots, self.verbose)
             else: 
                 if self.map_type == 'probability': 
-                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]])) for i,point in weight_X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]]),noise_model=self.noise_model) for i,point in weight_X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
                 elif self.map_type == 'angle':
-                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([1,1]),self.norm_relevance) for i,point in weight_X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
+                    distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([1,1]),self.norm_relevance,noise_model=self.noise_model) for i,point in weight_X.iterrows()] for j,centroid in normalized_clusters.iterrows()])
         labels = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
         return labels
 
