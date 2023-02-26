@@ -7,7 +7,7 @@ with open("README.md", 'r', encoding="utf-8") as f:
 
 setup(
    name='qmeans',
-   version='0.1.1',
+   version='0.1.2',
    description='Q-Means algorithm implementation using Qiskit compatible with Scikit-Learn.',
    license="Apache-2.0",
    long_description=long_description,
