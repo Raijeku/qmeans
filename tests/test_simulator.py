@@ -136,12 +136,12 @@ def test_preprocess_angle():
         #std[std == 0] = 1
         verification_data = (data-mean)/std
         verification_data[np.isnan(verification_data)] = 0
-    print("Data:")
-    print(data)
-    print("Preprocessed data:")
-    print(preprocessed_data)
-    print("Verification data:")
-    print(verification_data)
+    #print("Data:")
+    #print(data)
+    #print("Preprocessed data:")
+    #print(preprocessed_data)
+    #print("Verification data:")
+    #print(verification_data)
     assert np.allclose(preprocessed_data, verification_data)
     
 #works
@@ -237,16 +237,16 @@ def test_preprocess_angle_norm_relevance():
     preprocessed_data = preprocess(data, map_type='angle', norm_relevance=True)
     preprocessed_norms = preprocessed_data[:,-1:]
     preprocessed_data = preprocessed_data[:,:-1]
-    print("data")
-    print(data)
+    #print("data")
+    #print(data)
     verification_norms = (data**2).sum(axis=1)**(1/2)
-    print("ver norm")
-    print(verification_norms)
+    #print("ver norm")
+    #print(verification_norms)
     #verification_norms[verification_norms == 0] = 1
     #print(verification_norms)
     max_norm = np.max(verification_norms)
     new_column = verification_norms/max_norm
-    print(new_column)
+    #print(new_column)
     #print(preprocessed_norms)
     #new_column = new_column.reshape((new_column.size,1))
     verification_norms = np.reshape(new_column, preprocessed_norms.shape)
