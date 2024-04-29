@@ -8,24 +8,25 @@ Typical usage example::
     
     import numpy as np
     import pandas as pd
-    from qmeans.qkmeans import *
+    from qmeans.qmeans import *
 
-    backend = Aer.get_backend("aer_simulator_statevector")
+    backend = AerSimulator()
     X = pd.DataFrame(np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]]))
-    qk_means = QuantumKMeans(backend, n_clusters=2, verbose=True)
-    qk_means.fit(X)
-    print(qk_means.labels_)
+    q_means = QuantumKMeans(backend, n_clusters=2, verbose=True)
+    q_means.fit(X)
+    print(q_means.labels_)
 """
 from typing import Tuple
 import numpy as np
 import pandas as pd
-from qiskit import Aer, IBMQ, execute, QuantumCircuit, ClassicalRegister, QuantumRegister
-from qiskit.providers.ibmq import IBMQBackend
+from qiskit import QuantumCircuit, ClassicalRegister, QuantumRegister, transpile
+from qiskit_aer import AerSimulator
+from qiskit.providers import Backend
 from sklearn.preprocessing import normalize, scale
 from sklearn.utils import check_random_state
 from sklearn.utils. extmath import stable_cumsum
 from sklearn.base import BaseEstimator
-from qiskit.providers.aer.noise import NoiseModel
+from qiskit_aer.noise import NoiseModel
 
 def preprocess(points: np.ndarray, map_type: str ='angle', norm_relevance: bool = False):
     """Preprocesses data points according to a type criteria.
@@ -83,7 +84,7 @@ def preprocess(points: np.ndarray, map_type: str ='angle', norm_relevance: bool 
         p_points, norms = normalize(points[:], return_norm=True)
         return p_points, norms
 
-def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str = 'probability', shots: int = 1024, norms: np.ndarray = np.array([1, 1]), norm_relevance: bool = False, noise_model: NoiseModel = None):
+def distance(x: np.ndarray, y: np.ndarray, backend: Backend, map_type: str = 'probability', shots: int = 1024, norms: np.ndarray = np.array([1, 1]), norm_relevance: bool = False, noise_model: NoiseModel = None):
     """Finds the distance between two data points by mapping the data points onto qubits using
     amplitude or angle encoding and then using a swap test.
 
@@ -137,7 +138,8 @@ def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str =
 
             qc.measure(qr[0], cr[0])
             qc.reset(qr)
-            job = execute(qc,backend=backend, shots=shots, noise_model=noise_model)
+            qc = transpile(qc, backend)
+            job = backend.run(qc, shots=shots, noise_model=noise_model)
             result = job.result()
             data = result.get_counts()
             if len(data)==1:
@@ -169,7 +171,8 @@ def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str =
 
             qc.measure(qr[0], cr[0])
             qc.reset(qr)
-            job = execute(qc,backend=backend, shots=shots, noise_model=noise_model)
+            qc = transpile(qc, backend)
+            job = backend.run(qc, shots=shots, noise_model=noise_model)
             result = job.result()
             data = result.get_counts()
             if len(data)==1: return 0.0
@@ -201,7 +204,8 @@ def distance(x: np.ndarray, y: np.ndarray, backend: IBMQBackend, map_type: str =
 
         qc.measure(qr[0], cr[0])
         qc.reset(qr)
-        job = execute(qc,backend=backend, shots=shots, noise_model=noise_model)
+        qc = transpile(qc, backend)
+        job = backend.run(qc, shots=shots, noise_model=noise_model)
         result = job.result()
         data = result.get_counts()
         if len(data)==1:
@@ -256,7 +260,7 @@ def batch_separate(X: np.ndarray, clusters: np.ndarray, max_experiments: int, no
     else:
         raise NotImplementedError
 
-def batch_distance(B: Tuple[np.ndarray, np.ndarray], backend: IBMQBackend, norm_B: np.ndarray, map_type: str = 'angle', shots: int = 1024):
+def batch_distance(B: Tuple[np.ndarray, np.ndarray], backend: Backend, norm_B: np.ndarray, map_type: str = 'angle', shots: int = 1024):
     """Finds the distance between pairs of data points and cluster centers inside a batch by
     mapping the data points onto qubits using amplitude or angle encoding and then using a swap test.
 
@@ -302,7 +306,8 @@ def batch_distance(B: Tuple[np.ndarray, np.ndarray], backend: IBMQBackend, norm_
                 qc.measure(qr[0], cr[0])
                 qc.reset(qr)
                 qcs.append(qc)
-            job = execute(qcs,backend=backend, shots=shots)
+            qcs = transpile(qcs, backend)
+            job = backend.run(qcs, shots=shots)
             result = job.result()
             data = result.get_counts()
 
@@ -326,7 +331,8 @@ def batch_distance(B: Tuple[np.ndarray, np.ndarray], backend: IBMQBackend, norm_
                 qc.measure(qr[0], cr[0])
                 qc.reset(qr)
                 qcs.append(qc)
-            job = execute(qcs,backend=backend, shots=shots)
+            qcs = transpile(qcs, backend)
+            job = backend.run(qcs, shots=shots)
             result = job.result()
             data = result.get_counts()
             contained = ['0'*2+'1' in batch_data for batch_data in data]
@@ -363,7 +369,8 @@ def batch_distance(B: Tuple[np.ndarray, np.ndarray], backend: IBMQBackend, norm_
                 qc.measure(qr[0], cr[0])
                 qc.reset(qr)
                 qcs.append(qc)
-            job = execute(qcs,backend=backend, shots=shots)
+            qcs = transpile(qcs, backend)
+            job = backend.run(qcs, shots=shots)
             result = job.result()
             data = result.get_counts()
 
@@ -394,7 +401,8 @@ def batch_distance(B: Tuple[np.ndarray, np.ndarray], backend: IBMQBackend, norm_
                 qc.measure(qr[0], cr[0])
                 qc.reset(qr)
                 qcs.append(qc)
-            job = execute(qcs,backend=backend, shots=shots)
+            qcs = transpile(qcs, backend)
+            job = backend.run(qcs, shots=shots)
             result = job.result()
             data = result.get_counts()
 
@@ -419,7 +427,8 @@ def batch_distance(B: Tuple[np.ndarray, np.ndarray], backend: IBMQBackend, norm_
                 qc.measure(qr[0], cr[0])
                 qc.reset(qr)
                 qcs.append(qc)
-            job = execute(qcs,backend=backend, shots=shots)
+            qcs = transpile(qcs, backend)
+            job = backend.run(qcs, shots=shots)
             result = job.result()
             data = result.get_counts()
             contained = ['0'*int(np.log2(B[0].shape[1]))*2+'1' in batch_data for batch_data in data]
@@ -453,7 +462,8 @@ def batch_distance(B: Tuple[np.ndarray, np.ndarray], backend: IBMQBackend, norm_
                 qc.measure(qr[0], cr[0])
                 qc.reset(qr)
                 qcs.append(qc)
-            job = execute(qcs,backend=backend, shots=shots)
+            qcs = transpile(qcs, backend)
+            job = backend.run(qcs, shots=shots)
             result = job.result()
             data = result.get_counts()
 
@@ -482,7 +492,8 @@ def batch_distance(B: Tuple[np.ndarray, np.ndarray], backend: IBMQBackend, norm_
                 qc.measure(qr[0], cr[0])
                 qc.reset(qr)
                 qcs.append(qc)
-            job = execute(qcs,backend=backend, shots=shots)
+            qcs = transpile(qcs, backend)
+            job = backend.run(qcs, shots=shots)
             result = job.result()
             data = result.get_counts()
             contained = ['0'*qubits*2+'1' in batch_data for batch_data in data]
@@ -517,7 +528,7 @@ def batch_collect(batch_d: np.ndarray, desired_shape: Tuple[int, int]):
     #print('Final Batch D is', final_batch_d)
     return final_batch_d.reshape(desired_shape)
 
-def batch_distances(X: np.ndarray, cluster_centers: np.ndarray, backend: IBMQBackend, map_type: str, shots: int, verbose: bool, norms: np.ndarray, cluster_norms: np.ndarray):
+def batch_distances(X: np.ndarray, cluster_centers: np.ndarray, backend: Backend, map_type: str, shots: int, verbose: bool, norms: np.ndarray, cluster_norms: np.ndarray):
     """Batches data and calculates and collects distances.
 
     Data is separated into batches, sent to the quantum device to calculate distances and the
@@ -555,10 +566,10 @@ def batch_distances(X: np.ndarray, cluster_centers: np.ndarray, backend: IBMQBac
     #if verbose: print('Distances are', distances)
     return distances
 
-def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_type: str, verbose: bool, initial_center: str, shots: int = 1024, norms: np.ndarray = np.array([1,1]), batch: bool = True, x_squared_norms: np.ndarray = None, n_local_trials: int = None, random_state: int = None, noise_model: NoiseModel = None):
-    """Init n_clusters seeds according to qk-means++.
+def qmeans_plusplus(X: np.ndarray, n_clusters: int, backend: Backend, map_type: str, verbose: bool, initial_center: str, shots: int = 1024, norms: np.ndarray = np.array([1,1]), batch: bool = True, x_squared_norms: np.ndarray = None, n_local_trials: int = None, random_state: int = None, noise_model: NoiseModel = None):
+    """Init n_clusters seeds according to q-means++.
 
-    Selects initial cluster centers for qk-mean clustering in a smart way to speed up convergence.
+    Selects initial cluster centers for q-mean clustering in a smart way to speed up convergence.
 
     Args:
         X: The data to pick seeds from.
@@ -583,12 +594,12 @@ def qkmeans_plusplus(X: np.ndarray, n_clusters: int, backend: IBMQBackend, map_t
         noise_model: Noise model to use when runnings circuits on a simulator.
 
     Returns:
-        centers: The initial centers for qk-means.
+        centers: The initial centers for q-means.
         indices: The index location of the chosen centers in the data array X. For a given index
             and center, X[index] = center.
     """
     if verbose:
-        print('Started Qkmeans++')
+        print('Started Qmeans++')
     random_state = check_random_state(random_state)
     n_samples, n_features = X.shape
 
@@ -695,9 +706,9 @@ class QuantumKMeans(BaseEstimator):
 
     Args:
         n_clusters: The number of clusters to use and the amount of centroids generated.
-        init: {'qk-means++, 'random'}, callable or array-like of shape (n_clusters, n_features)
+        init: {'q-means++, 'random'}, callable or array-like of shape (n_clusters, n_features)
         Method for initialization:
-            'qk-means++' : selects initial cluster centers for qk-mean clustering in a smart way to
+            'q-means++' : selects initial cluster centers for q-mean clustering in a smart way to
             speed up convergence.
             'random': choose n_clusters observations (rows) at random from data for the initial
             centroids.
@@ -729,7 +740,7 @@ class QuantumKMeans(BaseEstimator):
         labels_: Centroid labels for each data point.
         n_iter_: Number of iterations run before convergence.
     """
-    def __init__(self, backend: IBMQBackend = Aer.get_backend("aer_simulator_statevector"), n_clusters: int = 2, init: str = 'random', tol: float = 0.0001, max_iter: int = 300, verbose: bool = False, map_type: str = 'probability', shots: int = 1024, norm_relevance: bool = False, initial_center: str = 'random', noise_model: NoiseModel = None):
+    def __init__(self, backend: Backend = AerSimulator(), n_clusters: int = 2, init: str = 'random', tol: float = 0.0001, max_iter: int = 300, verbose: bool = False, map_type: str = 'probability', shots: int = 1024, norm_relevance: bool = False, initial_center: str = 'random', noise_model: NoiseModel = None):
         """Initializes an instance of the quantum k-means algorithm."""
         #self.cluster_centers_ = np.empty(0)
         #self.labels_ = np.empty(0)
@@ -765,16 +776,14 @@ class QuantumKMeans(BaseEstimator):
             X = pd.DataFrame(X)
         else: 
             X = pd.DataFrame(preprocess(X, self.map_type, self.norm_relevance))
-        #print('Preprocessed data is:',X)
-        if self.init == 'qk-means++':
+        if self.init == 'q-means++':
             if self.map_type == 'probability':
-                self.cluster_centers_, _ = qkmeans_plusplus(X, self.n_clusters, self.backend, self.map_type, self.verbose, self.initial_center, shots=self.shots, batch=batch, norms=norms)
+                self.cluster_centers_, _ = qmeans_plusplus(X, self.n_clusters, self.backend, self.map_type, self.verbose, self.initial_center, shots=self.shots, batch=batch, norms=norms)
             elif self.map_type == 'angle':
-                self.cluster_centers_, _ = qkmeans_plusplus(X, self.n_clusters, self.backend, self.map_type, self.verbose, self.initial_center, shots=self.shots, batch=batch)
+                self.cluster_centers_, _ = qmeans_plusplus(X, self.n_clusters, self.backend, self.map_type, self.verbose, self.initial_center, shots=self.shots, batch=batch)
             self.cluster_centers_ = pd.DataFrame(self.cluster_centers_)#.values
         elif self.init == 'random':
             self.cluster_centers_ = old_X.sample(n=self.n_clusters)
-        #print('Cluster centers are:', self.cluster_centers_)
         self.n_iter_ = 0
         while not finished and self.n_iter_ < self.max_iter:
             if self.verbose:
@@ -784,9 +793,6 @@ class QuantumKMeans(BaseEstimator):
             elif self.map_type == 'angle':
                 normalized_clusters = preprocess(self.cluster_centers_.values, self.map_type, self.norm_relevance)
             normalized_clusters = pd.DataFrame(normalized_clusters)
-            #print(norms)
-            #print(cluster_norms)
-            #print(X, normalized_clusters)
             if batch:
                 distances = batch_distances(X, normalized_clusters, self.backend, self.map_type, self.shots, self.verbose, norms, cluster_norms)
             else: 
@@ -794,16 +800,13 @@ class QuantumKMeans(BaseEstimator):
                     distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([norms[i],cluster_norms[j]]),noise_model=self.noise_model) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
                 elif self.map_type == 'angle':
                     distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([1,1]),self.norm_relevance,noise_model=self.noise_model) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
-            print(distances)
             self.labels_ = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
-            #print('self labels', self.labels_)
             new_centroids = old_X.groupby(self.labels_).mean() #Needs to be checked to see if less centers are an option
-            #print('new centroids', new_centroids)
             if self.verbose:
-                print("Old centroids are",self.cluster_centers_)
+                print("Old centroids are",self.cluster_centers_.values)
             if self.verbose:
-                print("New centroids are",new_centroids)
-            if abs((new_centroids - self.cluster_centers_).sum(axis=0).sum()) < self.tol:
+                print("New centroids are",new_centroids.values)
+            if abs((new_centroids.values - self.cluster_centers_.values).sum(axis=0).sum()) < self.tol:
                 finished = True
             self.cluster_centers_ = new_centroids
             if self.verbose:

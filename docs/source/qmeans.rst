@@ -4,10 +4,10 @@ qmeans package
 Submodules
 ----------
 
-qkmeans module
+qmeans module
 ---------------------
 
-.. automodule:: qkmeans
+.. automodule:: qmeans
    :members:
    :undoc-members:
    :show-inheritance:

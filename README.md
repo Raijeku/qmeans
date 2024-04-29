@@ -32,11 +32,11 @@ import numpy as np
 import pandas as pd
 from qmeans.qkmeans import *
 
-backend = Aer.get_backend("aer_simulator_statevector")
+backend = AerSimulator()
 X = pd.DataFrame(np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]]))
-qk_means = QuantumKMeans(backend, n_clusters=2, verbose=True)
-qk_means.fit(X)
-print(qk_means.labels_)
+q_means = QuantumKMeans(backend, n_clusters=2, verbose=True)
+q_means.fit(X)
+print(q_means.labels_)
 ```
 
 ## Requirements

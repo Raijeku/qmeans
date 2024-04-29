@@ -1,10 +1,10 @@
 from turtle import settiltangle
 from numpy import ones_like
 import pytest
-from qmeans.qkmeans import *
-from hypothesis import given, assume, settings, example
-from hypothesis.strategies import lists, integers, composite
-from hypothesis.extra.numpy import arrays, array_shapes
+from qmeans.qmeans import *
+#from hypothesis import given, assume, settings, example
+#from hypothesis.strategies import lists, integers, composite
+#from hypothesis.extra.numpy import arrays, array_shapes
 
 data_1 = np.array([[1, 2], [1, 4], [1, 0], [10, 2], [10, 4], [10, 0]])
 data_2 = np.array([[1, 5], [1, 10], [1, -3]])
@@ -389,7 +389,7 @@ def test_fit_probability_random():
 def test_fit_probability_qmeanspp():
     data = data_1
     n_clusters = 3
-    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, verbose = True)
+    qkmeans = QuantumKMeans(max_iter=50, init='q-means++', n_clusters=n_clusters, verbose = True)
     data = data.astype('float64')
     qkmeans.fit(data)
     assert qkmeans.cluster_centers_.shape[0] == n_clusters
@@ -400,7 +400,7 @@ def test_fit_probability_qmeanspp():
 def test_fit_probability_qmeanspp_far():
     data = data_1
     n_clusters = 3
-    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, verbose = True, initial_center = 'far')
+    qkmeans = QuantumKMeans(max_iter=50, init='q-means++', n_clusters=n_clusters, verbose = True, initial_center = 'far')
     data = data.astype('float64')
     qkmeans.fit(data)
     assert qkmeans.cluster_centers_.shape[0] == n_clusters
@@ -422,7 +422,7 @@ def test_fit_angle_random():
 def test_fit_angle_qmeanspp():
     data = data_1
     n_clusters = 3
-    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, verbose = True, map_type='angle')
+    qkmeans = QuantumKMeans(max_iter=50, init='q-means++', n_clusters=n_clusters, verbose = True, map_type='angle')
     data = data.astype('float64')
     qkmeans.fit(data)
     assert qkmeans.cluster_centers_.shape[0] == n_clusters
@@ -433,7 +433,7 @@ def test_fit_angle_qmeanspp():
 def test_fit_angle_qmeanspp_far():
     data = data_1
     n_clusters = 3
-    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, verbose = True, map_type='angle', initial_center = 'far')
+    qkmeans = QuantumKMeans(max_iter=50, init='q-means++', n_clusters=n_clusters, verbose = True, map_type='angle', initial_center = 'far')
     data = data.astype('float64')
     qkmeans.fit(data)
     assert qkmeans.cluster_centers_.shape[0] == n_clusters
@@ -478,7 +478,7 @@ def test_predict_probability_random():
 def test_predict_probability_qmeanspp():
     data = data_1
     n_clusters = 2
-    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters)
+    qkmeans = QuantumKMeans(max_iter=50, init='q-means++', n_clusters=n_clusters)
     data = data.astype('float64')
     qkmeans.fit(data)
     labels = qkmeans.predict(data)
@@ -487,7 +487,7 @@ def test_predict_probability_qmeanspp():
 def test_predict_probability_qmeanspp_far():
     data = data_1
     n_clusters = 2
-    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, initial_center = 'far')
+    qkmeans = QuantumKMeans(max_iter=50, init='q-means++', n_clusters=n_clusters, initial_center = 'far')
     data = data.astype('float64')
     qkmeans.fit(data)
     labels = qkmeans.predict(data)
@@ -505,7 +505,7 @@ def test_predict_angle_random():
 def test_predict_angle_qmeanspp():
     data = data_1
     n_clusters = 2
-    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, map_type='angle')
+    qkmeans = QuantumKMeans(max_iter=50, init='q-means++', n_clusters=n_clusters, map_type='angle')
     data = data.astype('float64')
     qkmeans.fit(data)
     labels = qkmeans.predict(data)
@@ -514,7 +514,7 @@ def test_predict_angle_qmeanspp():
 def test_predict_angle_qmeanspp_far():
     data = data_1
     n_clusters = 2
-    qkmeans = QuantumKMeans(max_iter=50, init='qk-means++', n_clusters=n_clusters, map_type='angle', initial_center = 'far')
+    qkmeans = QuantumKMeans(max_iter=50, init='q-means++', n_clusters=n_clusters, map_type='angle', initial_center = 'far')
     data = data.astype('float64')
     qkmeans.fit(data)
     labels = qkmeans.predict(data)
