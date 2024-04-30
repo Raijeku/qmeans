@@ -3,15 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Q-means documentation!
+Q-means documentation
 ==================================
-
-.. automodule:: qmeans
-    :members:
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
 
 The **q-means** leverages quantum computing to calculate distances for the centroid assignment part
 of the k-means unsupervised learning algorithm. It shares the same general steps its classical
@@ -27,7 +20,7 @@ many options are available for data encoding and job batching.
    datasets. [2]_
 
 Installation
-==================
+-------------------
 
 As the module is currently under development, no official way to install the module is currently
 released, although it will be available in PyPI and will be installable using the pip command:
@@ -36,7 +29,7 @@ released, although it will be available in PyPI and will be installable using th
    pip install qmeans
 
 Publications
-==================
+-------------------
 
 .. [1] D. Quiroga, P. Date and R. Pooser, "Discriminating Quantum States with Quantum Machine Learning," 2021 IEEE International Conference on Quantum Computing and Engineering (QCE), 2021, pp. 481-482, doi: 10.1109/QCE52317.2021.00088.
 
@@ -44,9 +37,9 @@ Publications
 
 .. [3] D. Quiroga, J. Botia, "Q-means clustering coherent noise tolerance analysis," International Congress EXPOIngenieria, 2022, pp. 437-443.
 
-Indices and tables
-==================
+Contents
+-------------------
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. toctree::
+   Home <self>
+   api
