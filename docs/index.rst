@@ -6,6 +6,9 @@
 Q-means documentation!
 ==================================
 
+.. automodule:: qmeans
+    :members:
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
