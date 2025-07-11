@@ -63,24 +63,6 @@ def preprocess(points: np.ndarray, map_type: str ='angle', norm_relevance: bool 
             p_points = np.concatenate((p_points, new_column),axis=1)
         return p_points
     elif map_type == 'probability':
-        """if len(points.shape) > 1:
-            size = points.shape[1]
-        else:
-            size = points.shape[0]"""
-        """print("pre points")
-        print(points)
-        print(type(points))
-        #i = 0
-        points = points.to_numpy()
-        for i, point in enumerate(points):
-            if np.array_equiv(point, np.zeros_like(point)):
-                point = np.ones_like(point)*((1/points.shape[1])**(1/2))
-            points[i] = point
-            print(point)
-            #i += 1
-        print("post points")
-        print(points)
-        points = pd.DataFrame(points)"""
         p_points, norms = normalize(points[:], return_norm=True)
         return p_points, norms
 
@@ -700,6 +682,16 @@ def qmeans_plusplus(X: np.ndarray, n_clusters: int, backend: Backend, map_type: 
 
     return centers, indices
 
+def _verify_cluster_centers(cluster_centers, X, n_clusters):
+    current_num = cluster_centers.shape[0]
+    if current_num != n_clusters:
+        temp_X = X[~np.isin(X, cluster_centers), X.shape[1] - cluster_centers.shape[1]:]
+        missing_clusters = temp_X.iloc[np.random.choice(temp_X.shape[0], size=n_clusters - current_num, replace=False)]
+        new_clusters = pd.concat((cluster_centers, missing_clusters))
+        return new_clusters
+    else:
+        return cluster_centers
+
 class QuantumKMeans(BaseEstimator):
     """Quantum k-means clustering algorithm. This k-means alternative implements quantum machine
     learning to calculate distances between data points and centroids using quantum circuits.
@@ -801,7 +793,8 @@ class QuantumKMeans(BaseEstimator):
                 elif self.map_type == 'angle':
                     distances = np.asarray([[distance(point,centroid,self.backend,self.map_type,self.shots,np.array([1,1]),self.norm_relevance,noise_model=self.noise_model) for i, point in X.iterrows()] for j, centroid in normalized_clusters.iterrows()])
             self.labels_ = np.asarray([np.argmin(distances[:,i]) for i in range(distances.shape[1])])
-            new_centroids = old_X.groupby(self.labels_).mean() #Needs to be checked to see if less centers are an option
+            new_centroids = old_X.groupby(self.labels_).mean() #Needs to be checked to see if less centers are an option Update 2025: less centers are not an option
+            new_centroids = _verify_cluster_centers(new_centroids, X, self.n_clusters)
             if self.verbose:
                 print("Old centroids are",self.cluster_centers_.values)
             if self.verbose:

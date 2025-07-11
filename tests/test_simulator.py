@@ -84,15 +84,8 @@ def test_preprocess_probability():
     verification_norms[verification_norms == 0] = 1
     for i, point in enumerate(verification_data):
         if np.array_equiv(point, np.zeros_like(point)):
-            #print('entered')
             point = np.ones_like(point)*((1/verification_data.shape[1])**(1/2))
-            #print('new point is:')
-            #print(point)
             verification_data[i] = point
-    #if np.allclose(verification_data, np.zeros_like(verification_data)):
-    #    verification_data = ones_like(verification_data)
-    #if (verification_data == 0).all():
-    #    verification_data = ones_like(verification_data)
     assert np.allclose(preprocessed_data, verification_data)
     assert np.allclose(norms, verification_norms)
 
@@ -133,15 +126,8 @@ def test_preprocess_angle():
     else:
         mean = data.mean(axis=0)
         std = data.std(axis=0)
-        #std[std == 0] = 1
         verification_data = (data-mean)/std
         verification_data[np.isnan(verification_data)] = 0
-    #print("Data:")
-    #print(data)
-    #print("Preprocessed data:")
-    #print(preprocessed_data)
-    #print("Verification data:")
-    #print(verification_data)
     assert np.allclose(preprocessed_data, verification_data)
     
 #works
@@ -237,41 +223,21 @@ def test_preprocess_angle_norm_relevance():
     preprocessed_data = preprocess(data, map_type='angle', norm_relevance=True)
     preprocessed_norms = preprocessed_data[:,-1:]
     preprocessed_data = preprocessed_data[:,:-1]
-    #print("data")
-    #print(data)
     verification_norms = (data**2).sum(axis=1)**(1/2)
-    #print("ver norm")
-    #print(verification_norms)
-    #verification_norms[verification_norms == 0] = 1
-    #print(verification_norms)
     max_norm = np.max(verification_norms)
     new_column = verification_norms/max_norm
-    #print(new_column)
-    #print(preprocessed_norms)
-    #new_column = new_column.reshape((new_column.size,1))
     verification_norms = np.reshape(new_column, preprocessed_norms.shape)
-    #verification_norms = new_column[:,np.newaxis]
-    #verification_norms = np.concatenate((np.empty_like(data), new_column),axis=1)
-    #verification_norms[verification_norms == 0] = 1
+
     if np.array_equiv(data, np.ones_like(data)*data[0]):
         verification_data = np.zeros_like(preprocessed_data)
     else:
         mean = data.mean(axis=0)
         std = data.std(axis=0)
-        #std[std == 0] = 1
         verification_data = (data-mean)/std
         verification_data[np.isnan(verification_data)] = 0
 
     verification_norms[np.isnan(verification_norms)] = 0
 
-    #print("Preprocessed data")
-    #print(preprocessed_data[:5])
-    #print("Verification data")
-    #print(verification_data[:5])
-    #print("Preprocessed norms")
-    #print(preprocessed_norms[:5])
-    #print("Verification norms")
-    #print(verification_norms[:5])
     assert np.allclose(preprocessed_data, verification_data)
     assert np.allclose(preprocessed_norms, verification_norms)
 
